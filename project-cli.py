@@ -1,4 +1,5 @@
 import datetime
+import ast
 
 def printUser(movies):
     print("Select type of user: ")
@@ -85,12 +86,12 @@ def addMovie(movies):
     genre = input("Enter Genre: ")
     restrict = input("Enter Movie Restriction [G | PG | RPG | R18+]: ")
     venue = input("Enter Cinema Venue [1 | 2 | 3]: ")
-    startDate = input("Enter start date: [mm/dd/yy]: ")
-    endDate = input("Enter end date: [mm/dd/yy]: ")
+    date = input("Enter Date [mm/dd/yy]: ")
     startTime = input("Enter start time: [HH:MM (24)]: ")
     endTime = input("Enter end time: [HH:MM (24)]: ")
+    price = int(input("Enter price: "))
 
-    movies[MovieID] = [name, genre, restrict, venue, startDate, endDate, startTime, endTime]
+    movies[MovieID] = [name, genre, restrict, venue, date, startTime, endTime, price]
 
     with open("movies.txt", "w") as f:
         f.write(str(intMovieID))
@@ -101,12 +102,100 @@ def editMovie(movies):
     for k, v in movies.items():
         print(k, "-", v[0])
 
-    choice = input("Enter Movie ID to edit: ")
 
-    if choice in movies:
-        pass
+    movieID = input("Enter Movie ID to edit [0 to cancel]: ")
+
+    if movieID in movies:
+        print("[1] Edit 1 detail")
+        print("[2] Edit whole details")
+        print("[3] Go back to ID selection")
+
+        choice = input("Enter choice: ")
+
+        if choice == "1":
+            editOneDetail(movies, movieID)
+        elif choice == "2":
+            editAllDetails(movies, movieID)
+        elif choice == "3":
+            editMovie(movies)
+        else:
+            print("Invalid input")
+    elif movieID == "0":
+        adminMain(movies)
     else:
-        print(f"{choice} is not in the movie list.")
+        print(f"{movieID} is not in the movie list.")
+
+def editOneDetail(movies, movieID):
+    info = movies[movieID]
+    
+    print(f"Movie {movieID} Details:")
+    print(f"[1] Name: {info[0]}")
+    print(f"[2] Genre: {info[1]}")
+    print(f"[3] Restriction: {info[2]}")
+    print(f"[4] Venue: Cinema {info[3]}")
+    print(f"[5] Date and Time of Viewing: {info[4]}, {info[5]} - {info[6]}")
+    print(f"[6] Price: P{info[7]}")
+    print("[0] Go back")
+
+    choice = input("Enter choice: ")
+
+    if choice == "1":
+        name = input("Enter new name: ")
+        info[0] = name
+    elif choice == "2":
+        genre = input("Enter new genre: ")
+        info[1] = genre
+    elif choice == "3":
+        restrict = input("Enter new restriction [G | PG | RPG | R18+]: ")
+        info[2] = restrict
+    elif choice == "4":
+        cinema = input("Enter new cinema: ")
+        info[3] = cinema
+    elif choice == "5":
+        print(f"[1] Date: {info[4]}")
+        print(f"[2] Start time: {info[5]}")
+        print(f"[3] End time: {info[6]}")
+
+        edit = input("Choose detail to edit: ")
+
+        if edit == "1":
+            date = input("Enter new date [mm/dd/yy]: ")
+            info[4] = date
+        elif edit == "2":
+            start = input("Enter new start time: [HH:MM (24)]: ")
+            info[5] = start
+        elif edit == "3":
+            end = input("Enter new end time: [HH:MM (24)]: ")
+            info[6] = end
+        else:
+            print("Invalid input")
+    elif choice == "6":
+        price = int(input("Enter new price: "))
+        info[7] =price
+    elif choice == "0":
+        editMovie(movies)
+    else:
+        print("Invalid input")
+
+    with open("movies.txt", "w") as f:
+        f.write(str(len(movies)))
+        print("\n", movies, file = f)
+
+def editAllDetails(movies, movieID):
+    name = input("Enter new Movie Name: ")
+    genre = input("Enter new Genre: ")
+    restrict = input("Enter new Movie Restriction [G | PG | RPG | R18+]: ")
+    venue = input("Enter new Cinema Venue [1 | 2 | 3]: ")
+    date = input("Enter new Date [mm/dd/yy]: ")
+    startTime = input("Enter new start time: [HH:MM (24)]: ")
+    endTime = input("Enter new end time: [HH:MM (24)]: ")
+    price = int(input("Enter new price: "))
+
+    movies[movieID] = [name, genre, restrict, venue, date, startTime, endTime, price]
+
+    with open("movies.txt", "w") as f:
+        f.write(str(len(movies)))
+        print("\n", movies, file = f)
 
 def deleteMovie():
     pass
@@ -122,6 +211,12 @@ def bookMovie():
     pass
 
 movies = {}
+
+with open("movies.txt") as f:
+    data = f.readlines()
+
+if data[0] != "0":
+    movies = ast.literal_eval(data[1])
 
 while True:
     printUser(movies)
