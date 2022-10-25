@@ -38,7 +38,7 @@ def adminMain(movies):
         elif choice == "2":
             editMovie(movies)
         elif choice == "3":
-            deleteMovie()
+            deleteMovie(movies)
         elif choice == "4":
             viewMovieAdmin()
         elif choice == "5":
@@ -80,7 +80,7 @@ def addMovie(movies):
     with open("movies.txt", "r") as f:
         intMovieID = int(f.readline()) + 1
 
-    MovieID = str(intMovieID).zfill(4) # str kasi hindi kaya mag 4 digit if int
+    MovieID = str(intMovieID).zfill(4) # str because int cannot have a 4 0s 
     
     name = input("Enter Movie Name: ")
     genre = input("Enter Genre: ")
@@ -95,13 +95,12 @@ def addMovie(movies):
 
     with open("movies.txt", "w") as f:
         f.write(str(intMovieID))
-        print("\n" + movies, file = f)
+        print("\n", movies, file = f)
 
 def editMovie(movies):
     print("Movie List")
     for k, v in movies.items():
         print(k, "-", v[0])
-
 
     movieID = input("Enter Movie ID to edit [0 to cancel]: ")
 
@@ -209,8 +208,64 @@ def editAllDetails(movies, movieID):
             else:
                 f.writelines(line)
 
-def deleteMovie():
-    pass
+def deleteMovie(movies):
+    moviesDel = [] # so i can catch the "Dictionary changed size during iteration" error
+
+    print("[1] Delete a movie by ID")
+    print("[2] Delete all movies in a cinema by day")
+    print("[3] Delete all movies in all cinema by name")
+    
+    choice = input("Enter choice: ")
+
+    if choice == "1":
+        print("Movie List")
+        for k, v in movies.items():
+            print(k, "-", v[0])
+
+        movieID = input("Enter Movie ID to delete [0 to cancel]: ")
+        del movies[movieID]
+    elif choice == "2":
+        date = input("Enter date: ")
+        cinema = input("Enter cinema: ")
+
+        print(f"Movies at Cinema {cinema} on {date}")
+        for k, v in movies.items():
+            if cinema == v[3] and date == v[4]:
+                print(f"{k} - {v[0]}")
+                moviesDel.append(k)
+
+        answer = input("Are you sure to delete this/these movie/s [y | n]: ")
+        if answer == 'y':
+            for k in list(moviesDel):
+                if k in movies:
+                    del movies[k]
+
+        moviesDel = []
+    elif choice == "3":
+        name = input("Enter movie name: ")
+
+        for k, v in movies.items():
+            if name == v[0]:
+                print(f"{k} - {v[0]}")
+                moviesDel.append(k)
+
+        answer = input("Are you sure to delete this/these movie/s [y | n]: ")
+        if answer == 'y':
+            for k in list(moviesDel):
+                if k in movies:
+                    del movies[k]
+    else:
+        print("Invalid input")
+
+    with open("movies.txt", "r") as f:
+        lines = f.readlines()
+
+    with open("movies.txt", "w") as f: 
+        for i, line in enumerate(lines, 1):
+            if i == 2:
+                print(movies, file = f)
+            else:
+                f.writelines(line)
 
 def viewMovieAdmin():
     pass
