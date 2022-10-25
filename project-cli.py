@@ -27,20 +27,24 @@ def adminMain(movies):
         print("[2] Edit movie")
         print("[3] Delete a movie")
         print("[4] View movie/s")
-        print("[0] Go back")
+        print("[5] Go back")
+        print("[0] Exit")
 
         choice = input("Enter choice: ")
 
         if choice == "1":
             addMovie(movies)
         elif choice == "2":
-            editMovie()
+            editMovie(movies)
         elif choice == "3":
             deleteMovie()
         elif choice == "4":
             viewMovieAdmin()
-        elif choice == "0":
+        elif choice == "5":
             printUser()
+        elif choice == "0":
+            print("Good bye")
+            exit()
         else:
             print("Invalid input")
 
@@ -52,7 +56,8 @@ def cashierMain():
 
         print("[1] View Movies")
         print("[2] Book Movies")
-        print("[0] Go back")
+        print("[3] Go back")
+        print("[0] Exit")
 
         choice = input("Enter choice: ")
 
@@ -62,6 +67,9 @@ def cashierMain():
             bookMovie()
         elif choice == "3":
             printUser()
+        elif choice == "0":
+            print("Good bye")
+            exit()
         else:
             print("Invalid input")
 
@@ -70,9 +78,9 @@ def cashierMain():
 def addMovie(movies):
     with open("movies.txt", "r") as f:
         intMovieID = int(f.readline()) + 1
-    strMovieID = str(intMovieID).zfill(4) # str kasi hindi kaya mag 4 digit if int
-    
 
+    MovieID = str(intMovieID).zfill(4) # str kasi hindi kaya mag 4 digit if int
+    
     name = input("Enter Movie Name: ")
     genre = input("Enter Genre: ")
     restrict = input("Enter Movie Restriction [G | PG | RPG | R18+]: ")
@@ -82,12 +90,23 @@ def addMovie(movies):
     startTime = input("Enter start time: [HH:MM (24)]: ")
     endTime = input("Enter end time: [HH:MM (24)]: ")
 
-    movies[strMovieID] = [name, genre, restrict, venue, startDate, endDate, startTime, endTime]
+    movies[MovieID] = [name, genre, restrict, venue, startDate, endDate, startTime, endTime]
 
-    print(strMovieID, movies[strMovieID])
+    with open("movies.txt", "w") as f:
+        f.write(str(intMovieID))
+        print("\n", movies, file = f)
 
-def editMovie():
-    pass
+def editMovie(movies):
+    print("Movie List")
+    for k, v in movies.items():
+        print(k, "-", v[0])
+
+    choice = input("Enter Movie ID to edit: ")
+
+    if choice in movies:
+        pass
+    else:
+        print(f"{choice} is not in the movie list.")
 
 def deleteMovie():
     pass
