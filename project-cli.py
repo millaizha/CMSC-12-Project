@@ -1,4 +1,5 @@
-import datetime
+from datetime import datetime
+from datetimerange import DateTimeRange
 import ast
 
 def printUser(movies):
@@ -22,7 +23,7 @@ def printUser(movies):
 def adminMain(movies):
     while True:
         print("-" * 20 + "ADMIN MENU" + "-" * 20)
-        print(f"Time: {datetime.datetime.now()}")
+        print(f"Time: {datetime.strftime(datetime.now(), '%m/%d/%y %I:%M %p')}")
 
         print("[1] Add movie slot")
         print("[2] Edit movie")
@@ -40,7 +41,7 @@ def adminMain(movies):
         elif choice == "3":
             deleteMovie(movies)
         elif choice == "4":
-            viewMovieAdmin()
+            viewMovieAdmin(movies)
         elif choice == "5":
             printUser()
         elif choice == "0":
@@ -53,7 +54,7 @@ def adminMain(movies):
 def cashierMain():
     while True:
         print("-" * 20 + "CASHIER MENU" + "-" * 20)
-        print(f"Time: {datetime.datetime.now()}")
+        print(f"Time: {datetime.strftime(datetime.now(), '%m/%d/%y %I:%M %p')}")
 
         print("[1] View Movies")
         print("[2] Book Movies")
@@ -86,9 +87,13 @@ def addMovie(movies):
     genre = input("Enter Genre: ")
     restrict = input("Enter Movie Restriction [G | PG | RPG | R18+]: ")
     venue = input("Enter Cinema Venue [1 | 2 | 3]: ")
-    date = input("Enter Date [mm/dd/yy]: ")
-    startTime = input("Enter start time: [HH:MM (24)]: ")
-    endTime = input("Enter end time: [HH:MM (24)]: ")
+    date = str(datetime.strptime(input("Enter Date [mm/dd/yy]: "), '%m/%d/%y').date())
+    startTime = str(datetime.strptime(input("Enter start time: [HH:MM AM/PM]: "), '%I:%M %p').time())
+    endTime = str(datetime.strptime(input("Enter end time: [HH:MM AM/PM]: "), '%I:%M %p').time())
+    for k, v in movies.items():
+        if v[3] == venue and v[4] == date and (startTime in DateTimeRange(v[5], v[6]) or endTime in DateTimeRange(v[5], v[6])):
+            print(f"This movie will be in conflict with {k} - {v[0]} [Cinema {v[3]}]: {datetime.strftime(datetime.strptime(v[4], '%Y-%m-%d'), '%m/%d/%y')} {datetime.strftime(datetime.strptime(v[5], '%H:%M:%S'), '%I:%M %p')} - {datetime.strftime(datetime.strptime(v[6], '%H:%M:%S'), '%I:%M %p')}.")
+            adminMain(movies)
     price = int(input("Enter price: "))
 
     movies[MovieID] = [name, genre, restrict, venue, date, startTime, endTime, price]
@@ -158,13 +163,13 @@ def editOneDetail(movies, movieID):
         edit = input("Choose detail to edit: ")
 
         if edit == "1":
-            date = input("Enter new date [mm/dd/yy]: ")
+            date = str(datetime.strptime(input("Enter new date [mm/dd/yy]: "), '%m/%d/%y').date())
             info[4] = date
         elif edit == "2":
-            start = input("Enter new start time: [HH:MM (24)]: ")
+            start = str(datetime.strptime(input("Enter new start time: [HH:MM AM/PM]: "), '%I:%M %p').time())
             info[5] = start
         elif edit == "3":
-            end = input("Enter new end time: [HH:MM (24)]: ")
+            end = str(datetime.strptime(input("Enter new end time: [HH:MM AM/PM]: "), '%I:%M %p').time())
             info[6] = end
         else:
             print("Invalid input")
@@ -191,9 +196,9 @@ def editAllDetails(movies, movieID):
     genre = input("Enter new Genre: ")
     restrict = input("Enter new Movie Restriction [G | PG | RPG | R18+]: ")
     venue = input("Enter new Cinema Venue [1 | 2 | 3]: ")
-    date = input("Enter new Date [mm/dd/yy]: ")
-    startTime = input("Enter new start time: [HH:MM (24)]: ")
-    endTime = input("Enter new end time: [HH:MM (24)]: ")
+    date = str(datetime.strptime(input("Enter new Date [mm/dd/yy]: "), '%m/%d/%y').date())
+    startTime = str(datetime.strptime(input("Enter new start time: [HH:MM AM/PM]: "), '%I:%M %p').time())
+    endTime = str(datetime.strptime(input("Enter new end time: [HH:MM AM/PM]: "), '%I:%M %p').time())
     price = int(input("Enter new price: "))
 
     movies[movieID] = [name, genre, restrict, venue, date, startTime, endTime, price]
@@ -225,7 +230,7 @@ def deleteMovie(movies):
         movieID = input("Enter Movie ID to delete [0 to cancel]: ")
         del movies[movieID]
     elif choice == "2":
-        date = input("Enter date: ")
+        date = str(datetime.strptime(input("Enter date: "), '%m/%d/%y').date())
         cinema = input("Enter cinema: ")
 
         print(f"Movies at Cinema {cinema} on {date}")
@@ -254,6 +259,8 @@ def deleteMovie(movies):
             for k in list(moviesDel):
                 if k in movies:
                     del movies[k]
+        
+        moviesDel = []
     else:
         print("Invalid input")
 
@@ -267,9 +274,55 @@ def deleteMovie(movies):
             else:
                 f.writelines(line)
 
-def viewMovieAdmin():
-    pass
+def viewMovieAdmin(movies):
+    print("[1] View all movies")
+    print("[2] View all movies in a cinema by day")
+    print("[3] View all details of a movie by id")
+    print("[4] View all movie screening with a specific name")
 
+    choice = input("Enter choice: ")
+
+    if choice == "1":
+        print("Movie list")
+        for k, v in movies.items():
+            print(f"{k} - {v[0]} - [Cinema {v[3]}] {datetime.strftime(datetime.strptime(v[4], '%Y-%m-%d'), '%m/%d/%Y')} {datetime.strftime(datetime.strptime(v[5], '%H:%M:%S'), '%I:%M %p')} - {datetime.strftime(datetime.strptime(v[6], '%H:%M:%S'), '%I:%M %p')}")
+    elif choice == "2":
+        date = str(datetime.strftime(datetime.strptime(input("Enter date: "), '%m/%d/%y'), '%Y-%m-%d'))
+        cinema = input("Enter cinema: ")
+
+        print(f"Movies at Cinema {cinema} on {date}")
+        for k, v in movies.items():
+            if v[3] == cinema and v[4] == date:
+                print(f"{k} - {v[0]} [{datetime.strftime(datetime.strptime(v[5], '%H:%M:%S'), '%I:%M %p')} - {datetime.strftime(datetime.strptime(v[6], '%H:%M:%S'), '%I:%M %p')}]")
+    elif choice == "3": # will add earnings
+        print("Movie List")
+        for k, v in movies.items():
+            print(k, "-", v[0])
+
+        movie = input("Enter movie ID: ")
+
+        print(f"Movie {movie} Details:")
+        print(f"Name: {movies[movie][0]}")
+        print(f"Genre: {movies[movie][1]}")
+        print(f"Restriction: {movies[movie][2]}")
+        print(f"Venue: Cinema {movies[movie][3]}")
+        print(f"Date and Time of Viewing: {datetime.strftime(datetime.strptime(movies[movie][4], '%Y-%m-%d'), '%m/%d/%y')} {datetime.strftime(datetime.strptime(movies[movie][5], '%H:%M:%S'), '%I:%M %p')} - {datetime.strftime(datetime.strptime(movies[movie][6], '%H:%M:%S'), '%I:%M %p')}")
+        print(f"Price: P{movies[movie][7]}")
+    elif choice == "4":
+        viewDict = {}
+        name = input("Enter name: ")
+
+        for k, v in movies.items():
+            if name == v[0]:
+                viewDict[k] = v
+
+        viewDict = sorted(viewDict, key = lambda k: ([viewDict[k][4]], viewDict[k][5]))
+
+        print(f"Movies named \"{name}\":")
+        for i in viewDict:
+            print(f"{i} - {movies[i][0]} [Cinema {movies[i][3]}] {datetime.strftime(datetime.strptime(movies[i][4], '%Y-%m-%d'), '%m/%d/%y')} {datetime.strftime(datetime.strptime(movies[i][5], '%H:%M:%S'), '%I:%M %p')} - {datetime.strftime(datetime.strptime(movies[i][6], '%H:%M:%S'), '%I:%M %p')}")
+        
+        
 # cashier
 def viewMovieCashier():
     pass
