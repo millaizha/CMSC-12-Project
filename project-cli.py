@@ -69,8 +69,9 @@ def cashierMain():
 # admin
 def addMovie(movies):
     with open("movies.txt", "r") as f:
-        strMovieID = f.readline().zfill(5) # str kasi hindi kaya mag 4 digit if int
-    intMovieID = int(f.readline()) + 1
+        intMovieID = int(f.readline()) + 1
+    strMovieID = str(intMovieID).zfill(4) # str kasi hindi kaya mag 4 digit if int
+    
 
     name = input("Enter Movie Name: ")
     genre = input("Enter Genre: ")
@@ -83,7 +84,7 @@ def addMovie(movies):
 
     movies[strMovieID] = [name, genre, restrict, venue, startDate, endDate, startTime, endTime]
 
-    print(movies[strMovieID])
+    print(strMovieID, movies[strMovieID])
 
 def editMovie():
     pass
