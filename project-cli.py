@@ -1,7 +1,6 @@
 import datetime
-import json
 
-def printUser():
+def printUser(movies):
     print("Select type of user: ")
     print("[1] Admin")
     print("[2] Cashier")
@@ -10,7 +9,7 @@ def printUser():
     choice = input("Enter user: ")
 
     if choice == "1":
-        adminMain()
+        adminMain(movies)
     elif choice == "2":
         cashierMain()
     elif choice == "0":
@@ -19,7 +18,7 @@ def printUser():
     else:
         print("Invalid input")
 
-def adminMain():
+def adminMain(movies):
     while True:
         print("-" * 20 + "ADMIN MENU" + "-" * 20)
         print(f"Time: {datetime.datetime.now()}")
@@ -33,7 +32,7 @@ def adminMain():
         choice = input("Enter choice: ")
 
         if choice == "1":
-            addMovie()
+            addMovie(movies)
         elif choice == "2":
             editMovie()
         elif choice == "3":
@@ -68,8 +67,23 @@ def cashierMain():
 
 
 # admin
-def addMovie():
-    pass
+def addMovie(movies):
+    with open("movies.txt", "r") as f:
+        strMovieID = f.readline().zfill(5) # str kasi hindi kaya mag 4 digit if int
+    intMovieID = int(f.readline()) + 1
+
+    name = input("Enter Movie Name: ")
+    genre = input("Enter Genre: ")
+    restrict = input("Enter Movie Restriction [G | PG | RPG | R18+]: ")
+    venue = input("Enter Cinema Venue [1 | 2 | 3]: ")
+    startDate = input("Enter start date: [mm/dd/yy]: ")
+    endDate = input("Enter end date: [mm/dd/yy]: ")
+    startTime = input("Enter start time: [HH:MM (24)]: ")
+    endTime = input("Enter end time: [HH:MM (24)]: ")
+
+    movies[strMovieID] = [name, genre, restrict, venue, startDate, endDate, startTime, endTime]
+
+    print(movies[strMovieID])
 
 def editMovie():
     pass
@@ -87,6 +101,7 @@ def viewMovieCashier():
 def bookMovie():
     pass
 
+movies = {}
 
 while True:
-    printUser()
+    printUser(movies)
