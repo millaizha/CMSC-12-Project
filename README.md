@@ -3,4 +3,5 @@
 
  ## Additional libraries
 - DateTimeRange
-    pip install DateTimeRange
+
+    `pip install DateTimeRange`
