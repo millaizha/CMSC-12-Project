@@ -95,7 +95,7 @@ def addMovie(movies):
 
     with open("movies.txt", "w") as f:
         f.write(str(intMovieID))
-        print("\n", movies, file = f)
+        print("\n" + movies, file = f)
 
 def editMovie(movies):
     print("Movie List")
@@ -171,15 +171,21 @@ def editOneDetail(movies, movieID):
             print("Invalid input")
     elif choice == "6":
         price = int(input("Enter new price: "))
-        info[7] =price
+        info[7] = price
     elif choice == "0":
         editMovie(movies)
     else:
         print("Invalid input")
 
-    with open("movies.txt", "w") as f:
-        f.write(str(len(movies)))
-        print("\n", movies, file = f)
+    with open("movies.txt", "r") as f:
+        lines = f.readlines()
+
+    with open("movies.txt", "w") as f: 
+        for i, line in enumerate(lines, 1):
+            if i == 2:
+                print(movies, file = f)
+            else:
+                f.writelines(line)
 
 def editAllDetails(movies, movieID):
     name = input("Enter new Movie Name: ")
@@ -193,9 +199,15 @@ def editAllDetails(movies, movieID):
 
     movies[movieID] = [name, genre, restrict, venue, date, startTime, endTime, price]
 
-    with open("movies.txt", "w") as f:
-        f.write(str(len(movies)))
-        print("\n", movies, file = f)
+    with open("movies.txt", "r") as f:
+        lines = f.readlines()
+
+    with open("movies.txt", "w") as f: 
+        for i, line in enumerate(lines, 1):
+            if i == 2:
+                print(movies, file = f)
+            else:
+                f.writelines(line)
 
 def deleteMovie():
     pass
