@@ -1,8 +1,9 @@
 from datetime import datetime
 from datetimerange import DateTimeRange
+from colorama import Fore, Style
 import ast
 
-def printUser(movies):
+def printUser(movies, seats, booked):
     print("Select type of user: ")
     print("[1] Admin")
     print("[2] Cashier")
@@ -13,7 +14,7 @@ def printUser(movies):
     if choice == "1":
         adminMain(movies)
     elif choice == "2":
-        cashierMain()
+        cashierMain(seats, booked)
     elif choice == "0":
         print("Good bye")
         exit()
@@ -43,7 +44,7 @@ def adminMain(movies):
         elif choice == "4":
             viewMovieAdmin(movies)
         elif choice == "5":
-            printUser()
+            printUser(movies, seats, booked)
         elif choice == "0":
             print("Good bye")
             exit()
@@ -51,7 +52,7 @@ def adminMain(movies):
             print("Invalid input")
 
 
-def cashierMain():
+def cashierMain(seats, booked):
     while True:
         print("-" * 20 + "CASHIER MENU" + "-" * 20)
         print(f"Time: {datetime.strftime(datetime.now(), '%m/%d/%y %I:%M %p')}")
@@ -66,9 +67,9 @@ def cashierMain():
         if choice == "1":
             viewMovieCashier()
         elif choice == "2":
-            bookMovie()
+            bookMovie(seats, booked)
         elif choice == "3":
-            printUser()
+            printUser(movies,seats, booked)
         elif choice == "0":
             print("Good bye")
             exit()
@@ -97,10 +98,15 @@ def addMovie(movies):
     price = int(input("Enter price: "))
 
     movies[MovieID] = [name, genre, restrict, venue, date, startTime, endTime, price]
+    booked[MovieID] = []
 
     with open("movies.txt", "w") as f:
         f.write(str(intMovieID))
         print("\n", movies, file = f)
+
+    with open("seats.txt", "w") as f: 
+        print(seats, file = f)
+        print(booked, file = f)
 
 def editMovie(movies):
     print("Movie List")
@@ -325,7 +331,7 @@ def viewMovieAdmin(movies):
         print("Invalid Input")
         
 # cashier
-def viewMovieCashier():
+def viewMovieCashier(movies):
     print("[1] View all movies")
     print("[2] View movie by name")
 
@@ -349,10 +355,99 @@ def viewMovieCashier():
         for i in viewDict:
             print(f"{movies[i][0]} [Cinema {movies[i][3]}] {datetime.strftime(datetime.strptime(movies[i][4], '%Y-%m-%d'), '%m/%d/%y')} {datetime.strftime(datetime.strptime(movies[i][5], '%H:%M:%S'), '%I:%M %p')} - {datetime.strftime(datetime.strptime(movies[i][6], '%H:%M:%S'), '%I:%M %p')}")
 
-def bookMovie():
-    pass
+def bookMovie(seats,booked):
+    bookedSeats = []
+
+    print("Movie list")
+    for k, v in movies.items():
+        print(f"{k} - {v[0]} - [Cinema {v[3]}] {datetime.strftime(datetime.strptime(v[4], '%Y-%m-%d'), '%m/%d/%Y')} {datetime.strftime(datetime.strptime(v[5], '%H:%M:%S'), '%I:%M %p')} - {datetime.strftime(datetime.strptime(v[6], '%H:%M:%S'), '%I:%M %p')}")
+
+    movie = input("Select a movie ID: ")
+
+    book = int(input("Enter number of seats to book: "))
+
+    for i in range(book):
+        if movies[movie][3] == "1":
+            for j in range(len(seats) + 1):
+                for k in seats:
+                    if k[j] in booked[movie]:
+                        print(Fore.RED + k[j], end=f" {Style.RESET_ALL}")
+                    else:
+                        print(k[j], end=" ")
+                print()
+        elif movies[movie][3] == "2":
+            for j in range(len(seats)):
+                for k in seats:
+                    if k[j] in booked[movie]:
+                        print(Fore.RED + k[j], end=f" {Style.RESET_ALL}")
+                    else:
+                        print(k[j], end=" ")
+                print()
+        elif movies[movie][3] == "3":
+            for j in range(len(seats) - 1):
+                for k in seats:
+                    if k[j] in booked[movie]:
+                        print(Fore.RED + k[j], end=f" {Style.RESET_ALL}")
+                    else:
+                        print(k[j], end=" ")
+                print()
+
+        while len(bookedSeats) < book:
+            seat = input(f"Enter seat {i + 1}: ")
+            if seat in booked[movie]:
+                print("This seat is already taken!")
+                continue
+            else:
+                booked[movie].append(seat)
+                bookedSeats.append(seat)
+            break
+
+        with open("seats.txt", "w") as f: 
+            print(seats, file = f)
+            print(booked, file = f)
+
+    printReceipt(bookedSeats, movie)
+
+def printReceipt(book, movie):
+    amountDue = movies[movie][7] * len(book)
+    print(f"Your current amount due is {amountDue}.")
+    
+    code = input("Enter discount code [0 if none]: ")
+
+    if code in discount:
+        amountDue = (amountDue * (100 - discount[code])) / 100
+    while True:
+        cash = float(input("Enter cash: "))
+        if cash < amountDue:
+            print(f"Insufficient cash. Need {amountDue - cash} more.")
+        else:
+            break
+
+    change = cash - amountDue
+
+    print("-" * 20)
+    print("Booking and Payment Details: ")
+    print(f"Booking date\t\t: {datetime.strftime(datetime.now(), '%m/%d/%y %I:%M %p')}")
+    print(f"Amount Due\t\t: {amountDue:.2f}")
+    print(f"Cash\t\t\t: {cash:.2f}")
+    print(f"Change\t\t\t: {change:.2f}")
+    if code in discount:
+        print(f"Discount\t\t: {discount[code]}%")
+
+    print("-" * 20)
+    print("Movie Details:")
+    print(f"Movie\t\t\t: {movies[movie][0]}")
+    print(f"Date and Time\t\t: {datetime.strftime(datetime.strptime(movies[movie][4], '%Y-%m-%d'), '%m/%d/%y')} {datetime.strftime(datetime.strptime(movies[movie][5], '%H:%M:%S'), '%I:%M %p')} - {datetime.strftime(datetime.strptime(movies[movie][6], '%H:%M:%S'), '%I:%M %p')}")
+    print(f"Genre\t\t\t: {movies[movie][1]}")
+    print(f"Parental Rating\t\t: {movies[movie][2]}")
+    print(f"Cinema Number\t\t: Cinema {movies[movie][3]}")
+    print(f"Number of tickets\t: {len(book)}")
+    print("Seat Number/s\t\t:", *book)
 
 movies = {}
+seats = []
+booked = {}
+discount = {}
 
 with open("movies.txt") as f:
     data = f.readlines()
@@ -360,5 +455,16 @@ with open("movies.txt") as f:
 if data[0] != "0":
     movies = ast.literal_eval(data[1])
 
+with open("seats.txt") as f:
+    data = f.readlines()
+
+seats = ast.literal_eval(data[0])
+booked = ast.literal_eval(data[1])
+
+with open("discount.txt") as f:
+    for line in f:
+        (key, val) = line.split()
+        discount[key] = int(val)
+
 while True:
-    printUser(movies)
+    printUser(movies, seats, booked)
