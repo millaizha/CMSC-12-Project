@@ -235,6 +235,7 @@ def deleteMovie(movies):
 
         movieID = input("Enter Movie ID to delete [0 to cancel]: ")
         del movies[movieID]
+        del booked[movieID]
     elif choice == "2":
         date = str(datetime.strptime(input("Enter date: "), '%m/%d/%y').date())
         cinema = input("Enter cinema: ")
@@ -250,6 +251,7 @@ def deleteMovie(movies):
             for k in list(moviesDel):
                 if k in movies:
                     del movies[k]
+                    del booked[k]
 
         moviesDel = []
     elif choice == "3":
@@ -265,7 +267,8 @@ def deleteMovie(movies):
             for k in list(moviesDel):
                 if k in movies:
                     del movies[k]
-        
+                    del booked[k]
+
         moviesDel = []
     else:
         print("Invalid input")
@@ -279,6 +282,10 @@ def deleteMovie(movies):
                 print(movies, file = f)
             else:
                 f.writelines(line)
+
+    with open("seats.txt", "w") as f: 
+        print(seats, file = f)
+        print(booked, file = f)
 
 def viewMovieAdmin(movies):
     print("[1] View all movies")
@@ -300,7 +307,7 @@ def viewMovieAdmin(movies):
         for k, v in movies.items():
             if v[3] == cinema and v[4] == date:
                 print(f"{k} - {v[0]} [{datetime.strftime(datetime.strptime(v[5], '%H:%M:%S'), '%I:%M %p')} - {datetime.strftime(datetime.strptime(v[6], '%H:%M:%S'), '%I:%M %p')}]")
-    elif choice == "3": # will add earnings
+    elif choice == "3":
         print("Movie List")
         for k, v in movies.items():
             print(k, "-", v[0])
@@ -314,6 +321,7 @@ def viewMovieAdmin(movies):
         print(f"Venue: Cinema {movies[movie][3]}")
         print(f"Date and Time of Viewing: {datetime.strftime(datetime.strptime(movies[movie][4], '%Y-%m-%d'), '%m/%d/%y')} {datetime.strftime(datetime.strptime(movies[movie][5], '%H:%M:%S'), '%I:%M %p')} - {datetime.strftime(datetime.strptime(movies[movie][6], '%H:%M:%S'), '%I:%M %p')}")
         print(f"Price: P{movies[movie][7]}")
+        print(f"Total Earnings from Booked Seats: P{movies[movie][7] * len(booked[movie])}")
     elif choice == "4":
         viewDict = {}
         name = input("Enter name: ")
@@ -354,6 +362,8 @@ def viewMovieCashier(movies):
         print(f"Movies named \"{name}\":")
         for i in viewDict:
             print(f"{movies[i][0]} [Cinema {movies[i][3]}] {datetime.strftime(datetime.strptime(movies[i][4], '%Y-%m-%d'), '%m/%d/%y')} {datetime.strftime(datetime.strptime(movies[i][5], '%H:%M:%S'), '%I:%M %p')} - {datetime.strftime(datetime.strptime(movies[i][6], '%H:%M:%S'), '%I:%M %p')}")
+    else:
+        print("Invalid input")
 
 def bookMovie(seats,booked):
     bookedSeats = []
