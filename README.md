@@ -5,3 +5,7 @@
 - DateTimeRange
 
     `pip install DateTimeRange`
+
+- Colorama
+    
+    `pip install colorama`
