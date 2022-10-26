@@ -321,11 +321,33 @@ def viewMovieAdmin(movies):
         print(f"Movies named \"{name}\":")
         for i in viewDict:
             print(f"{i} - {movies[i][0]} [Cinema {movies[i][3]}] {datetime.strftime(datetime.strptime(movies[i][4], '%Y-%m-%d'), '%m/%d/%y')} {datetime.strftime(datetime.strptime(movies[i][5], '%H:%M:%S'), '%I:%M %p')} - {datetime.strftime(datetime.strptime(movies[i][6], '%H:%M:%S'), '%I:%M %p')}")
-        
+    else:
+        print("Invalid Input")
         
 # cashier
 def viewMovieCashier():
-    pass
+    print("[1] View all movies")
+    print("[2] View movie by name")
+
+    choice = input("Enter choice: ")
+
+    if choice == "1":
+        print("Movie list")
+        for k, v in movies.items():
+            print(f"{v[0]} - [Cinema {v[3]}] {datetime.strftime(datetime.strptime(v[4], '%Y-%m-%d'), '%m/%d/%Y')} {datetime.strftime(datetime.strptime(v[5], '%H:%M:%S'), '%I:%M %p')} - {datetime.strftime(datetime.strptime(v[6], '%H:%M:%S'), '%I:%M %p')}")
+    elif choice == "2":
+        viewDict = {}
+        name = input("Enter name: ")
+
+        for k, v in movies.items():
+            if name == v[0]:
+                viewDict[k] = v
+
+        viewDict = sorted(viewDict, key = lambda k: ([viewDict[k][4]], viewDict[k][5]))
+
+        print(f"Movies named \"{name}\":")
+        for i in viewDict:
+            print(f"{movies[i][0]} [Cinema {movies[i][3]}] {datetime.strftime(datetime.strptime(movies[i][4], '%Y-%m-%d'), '%m/%d/%y')} {datetime.strftime(datetime.strptime(movies[i][5], '%H:%M:%S'), '%I:%M %p')} - {datetime.strftime(datetime.strptime(movies[i][6], '%H:%M:%S'), '%I:%M %p')}")
 
 def bookMovie():
     pass
