@@ -1,7 +1,7 @@
 # CMSC 12 Project
  Movie Theater Booking System in Python
 
- ## Additional libraries
+ ## Additional packages
 - DateTimeRange
 
     `pip install DateTimeRange`
