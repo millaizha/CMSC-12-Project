@@ -1,4 +1,6 @@
 import PySimpleGUI as sg
+from datetime import datetime
+import ast
 
 sg.theme('DarkGrey5')
 
@@ -43,7 +45,7 @@ def adminMain():
         else:
             adminMain.close()
             if event == "Add movie":
-                pass
+                addMovie()
             elif event == "Edit movie":
                 pass
             elif event == "Delete movie":
@@ -79,13 +81,109 @@ def cashierMain():
                 pass
             elif event == "Book movie":
                 pass
-                pass
             elif event == "Go to Users":
                 chooseUser()
             elif event == "Exit":
                 exit()
 
     cashierMain.close()
+
+# Admin
+def addMovie():
+    with open("movies.txt", "r") as f:
+        intMovieID = int(f.readline()) + 1
+
+    movieID = str(intMovieID).zfill(4)
+
+    addMovieLayout = [
+                    [sg.T("Enter Movie name: "), sg.Input(key = "-NAME-", do_not_clear = True, size = (20,1))],
+                    [sg.T("Enter Movie Genre: "), sg.Input(key = "-GENRE-", do_not_clear = True, size = (20,1))],
+                    [sg.T("Choose Parental Rating: "), sg.Radio("G", "RESTRICT", key = "-G-", default = True), sg.Radio("PG", "RESTRICT", key = "-PG-"), sg.Radio("SPG", "RESTRICT", key = "-SPG-"), sg.Radio("R18", "RESTRICT", key = "-R18-")],
+                    [sg.T("Choose Cinema Venue: "), sg.Radio("1", "CINEMA", key = "-1-", default = True), sg.Radio("2", "CINEMA", key = "-2-"), sg.Radio("3", "CINEMA", key = "-3-")],
+                    [sg.T("Choose Date: "), sg.Input(key='-DATE-', size=(20,1)), sg.CalendarButton("Open Calendar", close_when_date_chosen=True,  target='-DATE-', format = "%m-%d-%y", location=(0,0), no_titlebar=False)],
+                    [sg.T("Enter Start Time: "), sg.Input(key='-STARTHOUR-', size=(5,1)), sg.T(":"), sg.Input(key='-STARTMIN-', size=(5,1)), sg.Radio("AM", "START12H", key = "-STARTAM-"), sg.Radio("PM", "START12H", key = "-STARTPM-")],
+                    [sg.T("Enter End Time: "), sg.Input(key='-ENDHOUR-', size=(5,1)), sg.T(":"), sg.Input(key='-ENDMIN-', size=(5,1)), sg.Radio("AM", "END12H", key = "-ENDAM-"), sg.Radio("PM", "END12H", key = "-ENDPM-")],
+                    [sg.T("Enter Movie Price: "), sg.Input(key = "-PRICE-", do_not_clear = True, size = (20,1))],
+                    [sg.Button("Add Movie"), sg.Button("Cancel")]
+                    ]
+
+    addMovie = sg.Window("Add Movie", addMovieLayout, modal = True)
+
+    while True:
+        event, values = addMovie.read()
+
+        if event == sg.WIN_CLOSED:
+            break
+        else:
+            addMovie.close()
+            if event == "Add Movie":
+                addMovieInfo(movieID, intMovieID, values)
+            elif event == "Cancel":
+                adminMain()
+
+    addMovie.close()
+
+def addMovieInfo(movieID, intMovieID, values):
+    if values["-G-"]:
+        restrict = "G"
+    elif values["-PG-"]:
+        restrict = "PG"
+    elif values["-SPG-"]:
+        restrict = "SPG"
+    else:
+        restrict = "R18"
+
+    if values["-1-"]:
+        cinema = "1"
+    elif values["-PG-"]:
+        cinema = "2"
+    else:
+        cinema = "3"
+    
+    startTime = values["-STARTHOUR-"] + ":" + values["-STARTMIN-"]
+    if values["-STARTAM-"]:
+        startTime += "AM"
+    else:
+        startTime += "PM"
+
+    endTime = values["-ENDHOUR-"] + ":" + values["-ENDMIN-"]
+    if values["-ENDAM-"]:
+        endTime += "AM"
+    else:
+        endTime += "PM"
+
+    movies[movieID] = [values["-NAME-"], values["-GENRE-"], restrict, cinema, values["-DATE-"], startTime, endTime, int(values["-PRICE-"])]
+    booked[movieID] = []
+    print(movies[movieID])
+    with open("movies.txt", "w") as f:
+        f.write(str(intMovieID))
+        print("\n", movies, file = f)
+
+    with open("seats.txt", "w") as f: 
+        print(seats, file = f)
+        print(booked, file = f)
+
+movies = {}
+seats = []
+booked = {}
+discount = {}
+
+with open("movies.txt") as f:
+    data = f.readlines()
+
+if data[0] != "0":
+    movies = ast.literal_eval(data[1])
+
+with open("seats.txt") as f:
+    data = f.readlines()
+
+seats = ast.literal_eval(data[0])
+booked = ast.literal_eval(data[1])
+
+with open("discount.txt") as f:
+    for line in f:
+        (key, val) = line.split()
+        discount[key] = int(val)
 
 chooseUser()
 exit()
