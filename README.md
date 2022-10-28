@@ -1,11 +1,14 @@
 # CMSC 12 Project
  Movie Theater Booking System in Python
 
- ## Additional packages
-- DateTimeRange
+- DateTimeRange (CLI)
 
     `pip install DateTimeRange`
-
-- Colorama
+    
+- Colorama (CLI)
     
     `pip install colorama`
+
+- PySimpleGUI (GUI)
+
+    `pip install pysimplegui`

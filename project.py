@@ -1,24 +1,91 @@
-import pygame
-import csv
+import PySimpleGUI as sg
 
-pygame.init()
+sg.theme('DarkGrey5')
 
-screen = pygame.display.set_mode((800,600))
+def chooseUser():
+    global user
+    user = sg.Window(
+        "Movie Theater Booking System", 
+        [[sg.T("Select a user: ")], 
+        [sg.Button("Admin", s=10), sg.Button("Cashier", s=10)]])
 
-pygame.display.set_caption("Movie Theater Booking System")
+    while True:
+        event, values = user.read()
+        if event == sg.WIN_CLOSED:
+            break
+        else:
+            user.close()
+            if event == "Admin":
+                adminMain()
+            elif event == "Cashier":
+                cashierMain()
+
+    user.close()
 
 def adminMain():
-    pass
+    adminMainLayout = [
+                    [sg.T("Select an option:")],
+                    [sg.Button("Add movie")],
+                    [sg.Button("Edit movie")],
+                    [sg.Button("Delete movie")],
+                    [sg.Button("View movie")],
+                    [sg.Button("Go to Users")],
+                    [sg.Button("Exit")]
+                    ]
+
+    adminMain = sg.Window("Admin Main Menu", adminMainLayout, modal = True)
+
+    while True:
+        event, values = adminMain.read()
+
+        if event == sg.WIN_CLOSED:
+            break
+        else:
+            adminMain.close()
+            if event == "Add movie":
+                pass
+            elif event == "Edit movie":
+                pass
+            elif event == "Delete movie":
+                pass
+            elif event == "View movie":
+                pass
+            elif event == "Go to Users":
+                chooseUser()
+            elif event == "Exit":
+                exit()
+
+    adminMain.close()
 
 def cashierMain():
-    pass
+    cashierMainLayout = [
+                    [sg.T("Select an option:")],
+                    [sg.Button("View movie")],
+                    [sg.Button("Book movie")],
+                    [sg.Button("Go to Users")],
+                    [sg.Button("Exit")]
+                    ]
 
-running = True
-while running:
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
+    cashierMain = sg.Window("Cashier Main Menu", cashierMainLayout, modal = True)
 
-    screen.fill((255, 255, 255))
-    pygame.display.update()
-pygame.quit()
+    while True:
+        event, values = cashierMain.read()
+
+        if event == sg.WIN_CLOSED:
+            break
+        else:
+            cashierMain.close()
+            if event == "View movie":
+                pass
+            elif event == "Book movie":
+                pass
+                pass
+            elif event == "Go to Users":
+                chooseUser()
+            elif event == "Exit":
+                exit()
+
+    cashierMain.close()
+
+chooseUser()
+exit()
