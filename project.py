@@ -34,7 +34,7 @@ def adminMain():
                     [sg.Button("Exit")]
                     ]
 
-    adminMain = sg.Window("Admin Main Menu", adminMainLayout, modal = True)
+    adminMain = sg.Window("Admin Main Menu", adminMainLayout, modal = True,  element_justification = "c")
 
     while True:
         event, values = adminMain.read()
@@ -48,7 +48,7 @@ def adminMain():
             elif event == "Edit movie":
                 editMovie()
             elif event == "Delete movie":
-                pass
+                deleteMovie()
             elif event == "View movie":
                 pass
             elif event == "Go to Users":
@@ -94,7 +94,7 @@ def addMovie():
                     [sg.T("Enter Movie Genre: "), sg.Input(key = "-GENRE-", do_not_clear = True, size = (20,1))],
                     [sg.T("Choose Parental Rating: "), sg.Radio("G", "RESTRICT", key = "-G-", default = True), sg.Radio("PG", "RESTRICT", key = "-PG-"), sg.Radio("SPG", "RESTRICT", key = "-SPG-"), sg.Radio("R18", "RESTRICT", key = "-R18-")],
                     [sg.T("Choose Cinema Venue: "), sg.Radio("1", "CINEMA", key = "-1-", default = True), sg.Radio("2", "CINEMA", key = "-2-"), sg.Radio("3", "CINEMA", key = "-3-")],
-                    [sg.T("Choose Date: "), sg.Input(key='-DATE-', size=(20,1)), sg.CalendarButton("Open Calendar", close_when_date_chosen=True,  target='-DATE-', format = "%m-%d-%y", location=(0,0), no_titlebar=False)],
+                    [sg.T("Choose Date: "), sg.Input(key='-DATE-', size=(20,1)), sg.CalendarButton("Open Calendar", close_when_date_chosen=True,  target='-DATE-', format = "%m-%d-%y", no_titlebar=False)],
                     [sg.T("Enter Start Time: "), sg.Input(key='-STARTHOUR-', size=(5,1)), sg.T(":"), sg.Input(key='-STARTMIN-', size=(5,1)), sg.Radio("AM", "START12H", key = "-STARTAM-", default = True), sg.Radio("PM", "START12H", key = "-STARTPM-")],
                     [sg.T("Enter End Time: "), sg.Input(key='-ENDHOUR-', size=(5,1)), sg.T(":"), sg.Input(key='-ENDMIN-', size=(5,1)), sg.Radio("AM", "END12H", key = "-ENDAM-", default = True), sg.Radio("PM", "END12H", key = "-ENDPM-")],
                     [sg.T("Enter Movie Price: "), sg.Input(key = "-PRICE-", do_not_clear = True, size = (20,1))],
@@ -220,6 +220,7 @@ def editMovie():
 
         if event == "Edit Movie Information" and bool(movieInfo):
             editMovieInfo(movieKey)
+            editMovie['-MOVIEINFO-'].update([])
         elif event == "Clear":
             editMovie['-MOVIEINFO-'].update([])
         elif event == "Cancel":
@@ -316,16 +317,218 @@ def editMovieInfo(movieKey):
 def saveEditInfo(restrict, cinema, startTime, endTime, values, movieKey):
     movies[movieKey] = [values["-NAME-"], values["-GENRE-"], restrict, cinema, values["-DATE-"], startTime, endTime, int(values["-PRICE-"])]
 
+    updateFiles()
+
+def deleteMovie():
+    deleteMovieLayout = [
+                        [sg.Button("Delete a movie by ID")],
+                        [sg.Button("Delete all movies in a Cinema by Day")],
+                        [sg.Button("Delete all movies in all cinema by name")],
+                        [sg.Button("Go Back")],
+                        ]
+
+    deleteMovie = sg.Window("Delete Movie", deleteMovieLayout, element_justification = "c")
+
+    while True:
+        event, values = deleteMovie.read()
+
+        if event == sg.WIN_CLOSED:
+            break
+        elif event == "Delete a movie by ID":
+            deleteMovieByID()
+        elif event == "Delete all movies in a Cinema by Day":
+            deleteMovieByDay()
+        elif event == "Delete all movies in all cinema by name":
+            deleteMovieByName()
+        elif event == "Go Back":
+            pass
+        
+        deleteMovie.close()
+        adminMain()
+
+def deleteMovieByID():
+    movieList = [f"{k} - {v[0]}" for k, v in movies.items()]
+    movieInfo = {}
+
+    showMovieList = [
+                            [sg.T("Select a Movie:")],
+                            [sg.T("Search: "), sg.Input(size=(20, 1), enable_events=True, key='-SEARCH-')],
+                            [sg.Listbox(movieList, size=(40, 10), enable_events = True, key='-MOVIE-')],
+                            [sg.Button("Cancel")]
+                            ]
+
+    showMovieInfo = [
+                    [sg.T("Movie Information:")],
+                    [sg.Listbox(movieInfo, size=(50, 7), enable_events = True, key='-MOVIEINFO-')],
+                    [sg.Button("Delete Movie")]
+                    ]
+
+    deleteMovieByIDLayout = [
+                      [sg.Column(showMovieList, element_justification = "c"), sg.Column(showMovieInfo, element_justification="c")]
+                      ]
+    deleteMovieByID = sg.Window("Delete Movie", deleteMovieByIDLayout)
+
+    while True:
+        event, values = deleteMovieByID.read()
+
+        if event == sg.WIN_CLOSED:
+            break
+
+        if values['-SEARCH-'] != '':
+            search = values['-SEARCH-']
+            new_values = [x for x in movieList if search in x]
+            deleteMovieByID['-MOVIE-'].update(new_values) 
+        else:
+            deleteMovieByID['-MOVIE-'].update(movieList)
+
+        if event == '-MOVIE-' and len(values['-MOVIE-']):
+            movieKey = str(values["-MOVIE-"])[2:6]
+            movieInfo = [f"Movie ID: {movieKey}", f"Movie Name: {movies[movieKey][0]}", 
+                        f"Movie Genre: {movies[movieKey][1]}", f"Parental Ratings: {movies[movieKey][2]}",
+                        f"Cinema Room: {movies[movieKey][3]}", f"Date and Time of Viewing: {movies[movieKey][4]} {movies[movieKey][5]} - {movies[movieKey][6]}",
+                        f"Price: P{movies[movieKey][7]}"]
+            deleteMovieByID["-MOVIEINFO-"].update(movieInfo)
+
+        if event == "Delete Movie" and bool(movieInfo):
+            answer = sg.popup_yes_no(f"Are you sure to delete {movieKey} - {movies[movieKey][0]}?")
+            if answer == "Yes":
+                del movies[movieKey]
+                del booked[movieKey]
+                deleteMovieByID['-MOVIEINFO-'].update([])
+        elif event == "Cancel":
+            deleteMovieByID.close()
+            break
+
+        movieList = [f"{k} - {v[0]}" for k, v in movies.items()]
+        deleteMovieByID['-MOVIE-'].update(movieList)
+
+        updateFiles()
+
+    deleteMovie()
+
+def deleteMovieByDay():
+    moviesDel = []
+
+    deleteMovieByDayLayout = [
+                             [sg.T("Select a Date: "), sg.Input(key='-DATE-', size=(20,1)), sg.CalendarButton("Open Calendar", close_when_date_chosen=True,  target='-DATE-', format = "%m-%d-%y", no_titlebar=False)],
+                             [sg.T("Select a  Cinema Venue: "), sg.Radio("1", "CINEMA", key = "-1-", default = True), sg.Radio("2", "CINEMA", key = "-2-"), sg.Radio("3", "CINEMA", key = "-3-")],
+                             [sg.Button("Search Movies")],
+                             [sg.Button("Cancel")]
+                             ]
+
+    deleteMovieByDay = sg.Window("Delete Movie", deleteMovieByDayLayout, modal = True, element_justification = "c")
+
+    input_key_list = [key for key, value in deleteMovieByDay.key_dict.items()
+                    if isinstance(value, sg.Input)]
+
+    while True:
+        event, values = deleteMovieByDay.read()
+        cinema = "1"
+        if values["-2-"]:
+            cinema = "2"
+        elif values["-3-"]:
+            cinema = "3"
+
+        date = values["-DATE-"]
+
+        if event == sg.WIN_CLOSED:
+            break
+        if event == "Search Movies":
+            for k, v in movies.items():
+                if cinema == v[3] and date == v[4]:
+                    moviesDel.append(k)
+
+            if all(map(str.strip, [values[key] for key in input_key_list])):
+                if len(moviesDel) == 0:
+                    sg.popup(f"There are no movies on {date} in Cinema {cinema}")
+                else:
+                    answer = deletePopup(moviesDel)
+                    if answer == "Yes":
+                        for k in moviesDel:
+                            if k in movies:
+                                del movies[k]
+                                del booked[k]
+                        updateFiles()
+                    deleteMovieByDay.close()
+                    break
+            else:
+                sg.popup("Some inputs are missed!")   
+        elif event == "Cancel":
+            deleteMovieByDay.close()
+            break         
+
+def deleteMovieByName():
+    moviesDel = []
+
+    deleteMovieByNameLayout = [
+                              [sg.T("Search movie name to delete:")],
+                              [sg.Input(key = "-NAME-", do_not_clear = True, size = (20,1))],
+                              [sg.Button("Search")],
+                              [sg.Button("Cancel")]
+                              ]
+
+    deleteMovieByName = sg.Window("Delete movie", deleteMovieByNameLayout, element_justification = "c")
+
+    while True:
+        event, values = deleteMovieByName.read()
+
+        name = values["-NAME-"]
+
+        if event == sg.WIN_CLOSED:
+            deleteMovieByName.close()
+            break
+        if event == "Search" and name != "":
+            for k, v in movies.items():
+                if values["-NAME-"] == v[0]:
+                    moviesDel.append(k)
+            if len(moviesDel) == 0:
+                sg.popup(f"There is no movie named {name}")
+            else:
+                answer = deletePopup(moviesDel)
+                if answer == "Yes":
+                    for k in moviesDel:
+                        if k in movies:
+                            del movies[k]
+                            del booked[k]
+                    updateFiles()
+                deleteMovieByName.close()
+                break
+        elif event == "Cancel":
+            deleteMovieByName.close()
+
+def deletePopup(data):
+    layout =[
+            [sg.T("Are you sure to delete the following movie/s?")],
+            [[sg.T(f"{k} - {movies[k][0]}")] for k in data],
+            [sg.Button("Yes"), sg.Button("No")]
+            ]
+    
+    window = sg.Window("Delete movie", layout)
+
+    while True:
+        event, values = window.read()
+
+        if event == sg.WIN_CLOSED or event == "No":
+            break
+        else:
+            window.close()
+            return "Yes"
+
+def updateFiles():
     with open("movies.txt", "r") as f:
-        lines = f.readlines()
+            lines = f.readlines()
 
     with open("movies.txt", "w") as f: 
         for i, line in enumerate(lines, 1):
             if i == 2:
                 print(movies, file = f)
-            else:
+            else: 
                 f.writelines(line)
-        
+
+    with open("seats.txt", "w") as f: 
+            print(seats, file = f)
+            print(booked, file = f)
+
 movies = {}
 seats = []
 booked = {}
