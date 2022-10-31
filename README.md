@@ -3,7 +3,7 @@
  
   ## Additional libraries
 
-- DateTimeRange (CLI)
+- DateTimeRange (CLI/GUI)
 
     `pip install DateTimeRange`
     
