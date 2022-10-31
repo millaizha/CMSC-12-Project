@@ -78,7 +78,7 @@ def cashierMain():
         else:
             cashierMain.close()
             if event == "View movie":
-                pass
+                viewMovieCashier()
             elif event == "Book movie":
                 pass
             elif event == "Go to Users":
@@ -718,6 +718,49 @@ def viewMovieByName():
         elif event == "Go back":
             viewMovieByName.close()
             break
+
+def viewMovieCashier():
+    viewMovieCashierLayout = [
+                           [sg.Button("View all movies")],
+                           [sg.Button("View all movie screening by name")],
+                           [sg.Button("Go back")]
+                           ]
+
+    viewMovieCashier = sg.Window("View Movie", viewMovieCashierLayout, element_justification = "c")
+
+    while True:
+        event, values = viewMovieCashier.read()
+
+        if event == sg.WIN_CLOSED:
+            break
+
+        if event == "View all movies":
+            viewAllMoviesCashier()
+        elif event == "View all movie screening by name":
+            viewMovieByName()
+        elif event == "Go back":
+            viewMovieCashier.close()
+            adminMain()
+
+def viewAllMoviesCashier():
+    viewDict = sorted(movies, key = lambda k: ([datetime.strptime((movies[k][4]), '%m-%d-%y').date()], [datetime.strptime((movies[k][5]), '%I:%M%p').time()]))
+    movieList = [f"{k} - {movies[k][0]} [Cinema {movies[k][3]}] {movies[k][4]} {movies[k][5]} - {movies[k][6]}" for k in viewDict]
+
+    showMovieList = [
+                    [sg.T("Movie List:")],
+                    [sg.Listbox(movieList, size=(60, 10), enable_events = True, key='-MOVIE-')],
+                    [sg.Button("Go back")]
+                    ]
+
+    viewAllMoviesCashier = sg.Window("View Movies", showMovieList, element_justification = "c")
+
+    while True:
+        event, values = viewAllMoviesCashier.read()
+
+        if event == sg.WIN_CLOSED:
+            break
+        if event == "Go back":
+            viewAllMoviesCashier.close()
 
 def updateFiles():
     with open("movies.txt", "r") as f:
