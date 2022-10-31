@@ -1,3 +1,4 @@
+from ctypes import alignment
 import PySimpleGUI as sg
 from datetime import datetime
 from datetimerange import DateTimeRange
@@ -14,13 +15,14 @@ def chooseUser():
     while True:
         event, values = user.read()
         if event == sg.WIN_CLOSED:
-            break
+            exit()
         else:
             user.close()
             if event == "Admin":
                 adminMain()
             elif event == "Cashier":
                 cashierMain()
+            
 
     user.close()
 
@@ -41,7 +43,7 @@ def adminMain():
         event, values = adminMain.read()
 
         if event == sg.WIN_CLOSED:
-            break
+            exit()
         else:
             adminMain.close()
             if event == "Add movie":
@@ -74,13 +76,13 @@ def cashierMain():
         event, values = cashierMain.read()
 
         if event == sg.WIN_CLOSED:
-            break
+            exit()
         else:
             cashierMain.close()
             if event == "View movie":
                 viewMovieCashier()
             elif event == "Book movie":
-                pass
+                bookMovie()
             elif event == "Go to Users":
                 chooseUser()
             elif event == "Exit":
@@ -141,7 +143,7 @@ def addMovie():
         inConflict = False
 
         if event == sg.WIN_CLOSED:
-            break
+            exit()
         else:
             if event == "Add Movie":
                 for k, v in movies.items():
@@ -202,7 +204,7 @@ def editMovie():
         event, values = editMovie.read()
 
         if event == sg.WIN_CLOSED:
-            break
+            exit()
 
         if values['-SEARCH-'] != '':
             search = values['-SEARCH-']
@@ -270,7 +272,7 @@ def editMovieInfo(movieKey):
         inConflict = False
 
         if event == sg.WIN_CLOSED:
-            break
+            exit()
         else:
             if values["-G-"]:
                 restrict = "G"
@@ -307,18 +309,14 @@ def editMovieInfo(movieKey):
                         sg.Popup(f"This movie will be in conflict with {k} - {v[0]} [Cinema {v[3]}]: {v[4]} {v[5]} - {v[6]}.")
                         inConflict = True
                 if all(map(str.strip, [values[key] for key in input_key_list])) and not inConflict:
-                    saveEditInfo(restrict, cinema, startTime, endTime, values, movieKey)
+                    movies[movieKey] = [values["-NAME-"], values["-GENRE-"], restrict, cinema, values["-DATE-"], startTime, endTime, int(values["-PRICE-"])]
+                    updateFiles()
                 elif not all(map(str.strip, [values[key] for key in input_key_list])):
                     sg.popup("Some inputs are missed!")
                 editMovieInfo.close()
             elif event == "Cancel":
                 editMovieInfo.close()
                 break
-
-def saveEditInfo(restrict, cinema, startTime, endTime, values, movieKey):
-    movies[movieKey] = [values["-NAME-"], values["-GENRE-"], restrict, cinema, values["-DATE-"], startTime, endTime, int(values["-PRICE-"])]
-
-    updateFiles()
 
 def deleteMovie():
     deleteMovieLayout = [
@@ -334,7 +332,7 @@ def deleteMovie():
         event, values = deleteMovie.read()
 
         if event == sg.WIN_CLOSED:
-            break
+            exit()
         elif event == "Delete a movie by ID":
             deleteMovieByID()
         elif event == "Delete all movies in a Cinema by Day":
@@ -373,7 +371,7 @@ def deleteMovieByID():
         event, values = deleteMovieByID.read()
 
         if event == sg.WIN_CLOSED:
-            break
+            exit()
 
         if values['-SEARCH-'] != '':
             search = values['-SEARCH-']
@@ -433,7 +431,7 @@ def deleteMovieByDay():
         date = values["-DATE-"]
 
         if event == sg.WIN_CLOSED:
-            break
+            exit()
         if event == "Search Movies":
             for k, v in movies.items():
                 if cinema == v[3] and date == v[4]:
@@ -476,8 +474,7 @@ def deleteMovieByName():
         name = values["-NAME-"]
 
         if event == sg.WIN_CLOSED:
-            deleteMovieByName.close()
-            break
+            exit()
         if event == "Search" and name != "":
             for k, v in movies.items():
                 if values["-NAME-"] == v[0]:
@@ -530,7 +527,7 @@ def viewMovieAdmin():
         event, values = viewMovieAdmin.read()
 
         if event == sg.WIN_CLOSED:
-            break
+            exit()
 
         if event == "View all movies":
             viewAllMoviesAdmin()
@@ -559,7 +556,7 @@ def viewAllMoviesAdmin():
         event, values = viewAllMoviesAdmin.read()
 
         if event == sg.WIN_CLOSED:
-            break
+            exit()
         if event == "Go back":
             viewAllMoviesAdmin.close()
 
@@ -598,7 +595,7 @@ def viewMovieInCinema():
         date = values["-DATE-"]
 
         if event == sg.WIN_CLOSED:
-            break
+            exit()
 
         if event == "Search":
             viewMovieInCinema["-MOVIELIST-"].update([])
@@ -644,7 +641,7 @@ def viewMovieDetails():
         event, values = viewMovieDetails.read()
 
         if event == sg.WIN_CLOSED:
-            break
+            exit()
 
         if values['-SEARCH-'] != '':
             search = values['-SEARCH-']
@@ -694,7 +691,7 @@ def viewMovieByName():
         name = values["-NAME-"]
 
         if event == sg.WIN_CLOSED:
-            break
+            exit()
 
         if event == "Search":
             for k, v in movies.items():
@@ -732,7 +729,7 @@ def viewMovieCashier():
         event, values = viewMovieCashier.read()
 
         if event == sg.WIN_CLOSED:
-            break
+            exit()
 
         if event == "View all movies":
             viewAllMoviesCashier()
@@ -758,9 +755,233 @@ def viewAllMoviesCashier():
         event, values = viewAllMoviesCashier.read()
 
         if event == sg.WIN_CLOSED:
-            break
+            exit()
         if event == "Go back":
             viewAllMoviesCashier.close()
+
+def bookMovie():
+    movieList = [f"{k} - {v[0]}" for k, v in movies.items()]
+    movieInfo = {}
+
+    showMovieList = [
+                    [sg.T("Select a Movie:")],
+                    [sg.T("Search: "), sg.Input(size=(20, 1), enable_events=True, key='-SEARCH-')],
+                    [sg.Listbox(movieList, size=(40, 10), enable_events = True, key='-MOVIE-')],
+                    [sg.Button("Cancel")]
+                    ]
+
+    showMovieInfo = [
+                    [sg.T("Movie Information:")],
+                    [sg.Listbox(movieInfo, size=(50, 7), enable_events = True, key='-MOVIEINFO-')],
+                    [sg.Button("Book Seats")],
+                    [sg.Button("Clear")]
+                    ]
+    bookMovieLayout = [
+                        [sg.Column(showMovieList, element_justification = "c"), sg.Column(showMovieInfo, element_justification="c")]
+                        ]
+    bookMovie = sg.Window("Book Movie", bookMovieLayout)
+
+    while True:
+        event, values = bookMovie.read()
+
+        if event == sg.WIN_CLOSED:
+            exit()
+
+        if values['-SEARCH-'] != '':
+            search = values['-SEARCH-']
+            new_values = [x for x in movieList if search in x]
+            bookMovie['-MOVIE-'].update(new_values) 
+        else:
+            bookMovie['-MOVIE-'].update(movieList)
+
+        if event == '-MOVIE-' and len(values['-MOVIE-']):
+            movieKey = str(values["-MOVIE-"])[2:6]
+            movieInfo = [f"Movie ID: {movieKey}", f"Movie Name: {movies[movieKey][0]}", 
+                        f"Movie Genre: {movies[movieKey][1]}", f"Parental Ratings: {movies[movieKey][2]}",
+                        f"Cinema Room: {movies[movieKey][3]}", f"Date and Time of Viewing: {movies[movieKey][4]} {movies[movieKey][5]} - {movies[movieKey][6]}",
+                        f"Price: P{movies[movieKey][7]}"]
+            bookMovie["-MOVIEINFO-"].update(movieInfo)
+
+        if event == "Book Seats" and bool(movieInfo):
+            bookMovie.close()
+            bookSeats(movieKey)
+
+        if event == "Cancel":
+            bookMovie.close()
+            cashierMain()
+
+def bookSeats(movieKey):
+    bookedSeats = []
+
+    if movies[movieKey][3] == "1":
+        numSeats = len(seats) + 1
+    elif movies[movieKey][3] == "2":
+        numSeats = len(seats)
+    elif movies[movieKey][3] == "3":
+        numSeats = len(seats) - 1
+
+    selectSeats = [
+                  [sg.T("Select a seat", justification = "center")],
+                  [[sg.Button(j[i], size = (4,2), key= f"-SEAT{j[i]}-") 
+                  for j in seats] 
+                  for i in range(numSeats)]
+                  ]
+
+    availableLegend = [[sg.Button(size = (4, 2), disabled = True)], [sg.T("Available")]]
+    takenLegend = [[sg.Button(button_color = "red", size = (4, 2), disabled = True)], [sg.T("Taken")]]
+    selectedLegend = [[sg.Button(button_color = "green", size = (4, 2), disabled = True)], [sg.T("Selected")]]
+
+    buttonLegend = [
+                   [sg.T("Legend")],
+                   [sg.Column(availableLegend, element_justification = "c"), 
+                   sg.Column(takenLegend, element_justification = "c"), 
+                   sg.Column(selectedLegend, element_justification = "c")]
+                   ]
+
+    confirmation = [
+                   [sg.T("Selected Seats:")],
+                   [sg.T(key = "-SEATS-")],
+                   [sg.T(f"Total Price: P{len(bookedSeats) * movies[movieKey][7]}", key = "-PRICE-")],
+                   [sg.Button("Proceed to Payment")],
+                   [sg.Button("Cancel")]              
+                   ]
+
+    bookSeatsLayout = [[selectSeats], [buttonLegend, confirmation]]
+
+    bookSeats = sg.Window("Book seats", bookSeatsLayout, finalize = True, element_justification = "c")
+
+    while True:
+        for i in range(numSeats):
+            for j in seats:
+                if j[i] in booked[movieKey]:
+                    bookSeats.Element(f"-SEAT{j[i]}-").update(button_color = "red", disabled = True)
+
+        event, values = bookSeats.read()
+
+        if event == sg.WIN_CLOSED:
+            exit()
+
+        selectedSeat = bookSeats[event].get_text()
+
+        if selectedSeat == "Cancel":
+            bookSeats.close()
+            break
+
+        if selectedSeat == "Proceed to Payment" and not bool(bookedSeats):
+            pass
+        elif selectedSeat == "Proceed to Payment" and bool(bookedSeats):
+            bookSeats.close()
+            purchaseTickets(bookedSeats, movieKey)
+
+        while True:
+            if selectedSeat not in bookedSeats:
+                if selectedSeat != "Proceed to Payment":
+                    bookedSeats.append(selectedSeat)
+                    bookSeats[event].update(button_color = "green")
+            else:
+                bookedSeats.remove(selectedSeat)
+                bookSeats[event].update(button_color = "#8e8b82")
+            bookedSeats.sort()
+            bookSeats["-SEATS-"].update(" ".join(map(str, bookedSeats)))
+            bookSeats["-PRICE-"].update(f"Total Price: P{len(bookedSeats) * movies[movieKey][7]}")
+
+            break
+
+    bookMovie()
+
+def purchaseTickets(bookedSeats, movieKey):
+    amountDue = len(bookedSeats) * movies[movieKey][7]
+
+    purchaseTicketsLayout = [
+                         [sg.T("Purchase Summary", justification = "center")],
+                         [sg.T("Movie\t:"), sg.T(movies[movieKey][0])],
+                         [sg.T("Cinema\t:"), sg.T(movies[movieKey][3])],
+                         [sg.T("Date\t:"), sg.T(f"{movies[movieKey][4]}")],
+                         [sg.T("Time\t:"), sg.T(f"{movies[movieKey][5]} - {movies[movieKey][6]}")],
+                         [sg.T("Seats\t:"), sg.T(" ".join(map(str, bookedSeats)))],
+                         [sg.T()],
+                         [sg.T(f"Amount\ndue\t:"), sg.T(f"{amountDue:.2f}", key = "-AMOUNT-")],
+                         [sg.T("Enter\ndiscount code\t:"), sg.Input(size = 10, enable_events = True, key = "-DISCOUNT-")],
+                         [sg.T(visible = False, key = "-OFF-")],
+                         [sg.T("Enter cash\t:"), sg.Input(size = 10, enable_events = True, key = "-CASH-")],
+                         [sg.Button("Purchase Tickets")],
+                         [sg.Button("Cancel")]
+                         ]
+    
+    purchaseTickets = sg.Window("Purchase Tickets", purchaseTicketsLayout, finalize = True)
+
+    while True:
+        code = ""
+
+        event, values = purchaseTickets.read()
+
+        if event == sg.WIN_CLOSED:
+            exit()
+
+        if values["-DISCOUNT-"] != "":
+            code = values["-DISCOUNT-"]
+            if code in discount:
+                purchaseTickets["-OFF-"].update(f"\t\t    {discount[code]}% Off!", visible = True)
+                amountDue = ((len(bookedSeats) * movies[movieKey][7]) * (100 - discount[code])) / 100
+                purchaseTickets["-AMOUNT-"].update(F"{amountDue:.2f}")
+            elif amountDue != len(bookedSeats) * movies[movieKey][7]:
+                purchaseTickets["-OFF-"].update(visible = False)
+                amountDue = len(bookedSeats) * movies[movieKey][7]
+                purchaseTickets["-AMOUNT-"].update(F"{amountDue:.2f}")     
+
+        if event == "Purchase Tickets" and bool(values["-CASH-"]):
+            money = float(values["-CASH-"])
+            if money < amountDue:
+                sg.popup("Insufficient cash.")
+                print(code)
+            else:
+                booked[movieKey].extend(bookedSeats)
+                updateFiles()
+                purchaseTickets.close()
+                printReceipt(amountDue, code, money, bookedSeats, movieKey)
+
+        if event == "Cancel":
+            purchaseTickets.close()
+            break
+    
+    bookSeats(movieKey)
+
+def printReceipt(amount, code, cash, bookedSeats, movieKey):
+    printReceiptLayout = [
+                         [sg.T("Booking and Payment Details", justification = "center")],
+                         [sg.T(f"Booking date\t: {datetime.strftime(datetime.now(), '%m-%d-%y %I:%M%p')}")],
+                         [sg.T(f"Amount Due\t: {amount:.2f}")],
+                         [sg.T(f"Cash\t\t: {cash:.2f}")],
+                         [sg.T(f"Change\t\t: {(cash - amount):.2f}")],
+                         [sg.T(visible = False, key = "-DISCOUNT-")],
+                         [sg.T("Movie Details", justification = "center")],
+                         [sg.T(f"Movie\t\t: {movies[movieKey][0]}")],
+                         [sg.T(f"Date and\nTime\t\t: {movies[movieKey][4]} {movies[movieKey][5]} - {movies[movieKey][6]}")],
+                         [sg.T(f"Genre\t\t: {movies[movieKey][1]}")],
+                         [sg.T(f"Parental Rating\t: {movies[movieKey][2]}")],
+                         [sg.T(f"Cinema\t\t: Cinema {movies[movieKey][3]}")],
+                         [sg.T(f"Number of\nTickets\t\t: {len(bookedSeats)}")],
+                         [sg.T("Seat Numbers\t: " + ", ".join(map(str, bookedSeats)))],
+                         [sg.T("\nThank you and enjoy your movie!")],
+                         [sg.Button("OK")]
+                         ]
+
+    printReceipt = sg.Window("Receipt", printReceiptLayout, finalize = "True")
+
+    while True:
+        if code in discount:
+            printReceipt.Element("-DISCOUNT-").update(f"Discount\t\t: {discount[code]}%", visible = True)
+
+        event, values = printReceipt.read()
+
+        if event == sg.WIN_CLOSED:
+            exit()
+
+        if event == "OK":
+            printReceipt.close()
+            break
+
+    cashierMain()
 
 def updateFiles():
     with open("movies.txt", "r") as f:
