@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 from datetimerange import DateTimeRange
-import files, main, change_window
+from datetime import datetime
+import files, change_window
 
 def editMovie(movies):
     movieList = [f"{k} - {v[0]}" for k, v in movies.items()]
@@ -129,6 +130,29 @@ def editMovieInfo(movies, movieKey):
                 endTime += "PM"
                 
             if event == "Finish Editing Movie":
+                if not all(map(str.strip, [values[key] for key in input_key_list])):
+                    sg.popup("Some inputs are missed!")
+                    continue
+                
+                if datetime.now() >= datetime.strptime(values["-DATE-"], "%m-%d-%y"):
+                    sg.Popup("Please provide a future date.")
+                    inConflict = True
+                try:
+                    bool(datetime.strptime(startTime, "%I:%M%p"))
+                except ValueError:
+                    sg.Popup("Start time has a wrong time format.\nPlease follow the format 'HH:MM AM/PM'")
+                    inConflict = True
+                    continue
+                try:
+                    bool(datetime.strptime(endTime, "%I:%M%p"))
+                except ValueError:
+                    sg.Popup("End time has a wrong time format.\nPlease follow the format 'HH:MM AM/PM'")
+                    inConflict = True
+                    continue
+                if datetime.strptime(startTime, "%I:%M%p") > datetime.strptime(endTime, "%I:%M%p"):
+                    sg.Popup("End time is earlier than the start time.")
+                    inConflict = True
+                    continue
                 for k, v in movies.items():
                     if k != movieKey and v[3] == cinema and v[4] == values["-DATE-"] and (
                         startTime in DateTimeRange(v[5], v[6]) or endTime in DateTimeRange(v[5], v[6])):
@@ -139,8 +163,6 @@ def editMovieInfo(movies, movieKey):
                     editMovieInfo.close()
                     files.updateMovie(movies)
                     break
-                elif not all(map(str.strip, [values[key] for key in input_key_list])):
-                    sg.popup("Some inputs are missed!")
             elif event == "Cancel":
                 editMovieInfo.close()
                 break

@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-import purchase
+import purchase, change_window
 
 def bookMovie(movies, booked, seats, discount):
     movieList = [f"{k} - {v[0]}" for k, v in movies.items()]
@@ -50,6 +50,8 @@ def bookMovie(movies, booked, seats, discount):
 
         if event == "Cancel":
             bookMovie.close()
+            change_window.goToMenu("Cashier")
+            break
 
 def bookSeats(movieKey, movies, booked, seats, discount):
     bookedSeats = []
@@ -82,7 +84,7 @@ def bookSeats(movieKey, movies, booked, seats, discount):
     confirmation = [
                    [sg.T("Selected Seats:")],
                    [sg.T(key = "-SEATS-")],
-                   [sg.T(f"Total Price: P{len(bookedSeats) * movies[movieKey][7]}", key = "-PRICE-")],
+                   [sg.T(f"Total Price: P{len(bookedSeats) * int(movies[movieKey][7])}", key = "-PRICE-")],
                    [sg.Button("Proceed to Payment")],
                    [sg.Button("Cancel")]              
                    ]
@@ -94,8 +96,9 @@ def bookSeats(movieKey, movies, booked, seats, discount):
     while True:
         for i in range(numSeats):
             for j in seats:
-                if j[i] in booked[movieKey]:
-                    bookSeats.Element(f"-SEAT{j[i]}-").update(button_color = "red", disabled = True)
+                for k in range(len(booked[movieKey])):
+                    if j[i] in booked[movieKey][k]:
+                        bookSeats.Element(f"-SEAT{j[i]}-").update(button_color = "red", disabled = True)
 
         event, values = bookSeats.read()
 
@@ -117,15 +120,18 @@ def bookSeats(movieKey, movies, booked, seats, discount):
         while True:
             if selectedSeat not in bookedSeats:
                 if selectedSeat != "Proceed to Payment":
-                    bookedSeats.append(selectedSeat)
+                    bookedSeats.append([selectedSeat])
                     bookSeats[event].update(button_color = "green")
             else:
                 bookedSeats.remove(selectedSeat)
                 bookSeats[event].update(button_color = "#8e8b82")
             bookedSeats.sort()
-            bookSeats["-SEATS-"].update(" ".join(map(str, bookedSeats)))
+            selectedSeats = ""
+            for seat in bookedSeats:
+                selectedSeats += f"{seat[0]} "
+            bookSeats["-SEATS-"].update(selectedSeats)
             bookSeats["-PRICE-"].update(f"Total Price: P{len(bookedSeats) * movies[movieKey][7]}")
 
             break
 
-    bookMovie()
+    bookMovie(movies, booked, seats, discount)

@@ -1,8 +1,7 @@
 import PySimpleGUI as sg
-import datetime
-import main, change_window
+import files, change_window
 
-def viewMovieAdmin(movies, booked):
+def viewMovieAdmin(movies):
     viewMovieAdminLayout = [
                            [sg.Button("View all movies")],
                            [sg.Button("View all movies in a cinema by day")],
@@ -24,7 +23,7 @@ def viewMovieAdmin(movies, booked):
         elif event == "View all movies in a cinema by day":
             viewMovieInCinema(movies)
         elif event == "View details of a movie":
-            viewMovieDetails(movies, booked)
+            viewMovieDetails(movies)
         elif event == "View all movie screening by name":
             viewMovieByName(movies)
         elif event == "Go back":
@@ -107,9 +106,11 @@ def viewMovieInCinema(movies):
             viewMovieInCinema.close()
             break
 
-def viewMovieDetails(movies, booked):
+def viewMovieDetails(movies):
     movieList = [f"{k} - {v[0]}" for k, v in movies.items()]
     movieInfo = {}
+    booked = files.loadBooked()
+    print(booked)
 
     showMovieList = [
                     [sg.T("Select a Movie:")],
@@ -143,10 +144,16 @@ def viewMovieDetails(movies, booked):
 
         if event == '-MOVIE-' and len(values['-MOVIE-']):
             movieKey = str(values["-MOVIE-"])[2:6]
+            
+            totalEarnings = 0
+            
+            for i in range(len(booked[movieKey])):
+                totalEarnings += float(booked[movieKey][i][1])
+
             movieInfo = [f"Movie ID: {movieKey}", f"Movie Name: {movies[movieKey][0]}", 
                         f"Movie Genre: {movies[movieKey][1]}", f"Parental Ratings: {movies[movieKey][2]}",
                         f"Cinema Room: {movies[movieKey][3]}", f"Date and Time of Viewing: {movies[movieKey][4]} {movies[movieKey][5]} - {movies[movieKey][6]}",
-                        f"Price: P{movies[movieKey][7]}", f"Total Earnings from Booked Seats: P{int(movies[movieKey][7]) * len(booked[movieKey])}"]
+                        f"Price: P{movies[movieKey][7]}", f"Total Earnings from Booked Seats: P{totalEarnings}"]
             viewMovieDetails["-MOVIEINFO-"].update(movieInfo)
 
         if event == "Clear":
@@ -229,9 +236,11 @@ def viewMovieCashier(movies):
             viewMovieByName(movies)
         elif event == "Go back":
             viewMovieCashier.close()
+            change_window.goToMenu("Cashier")
+            break
 
 def viewAllMoviesCashier(movies):
-    viewDict = sorted(movies, key = lambda k: ([datetime.strptime((movies[k][4]), '%m-%d-%y').date()], [datetime.strptime((movies[k][5]), '%I:%M%p').time()]))
+    viewDict = sorted(movies, key = lambda k: ([movies[k][4]], [movies[k][5]]))
     movieList = [f"{k} - {movies[k][0]} [Cinema {movies[k][3]}] {movies[k][4]} {movies[k][5]} - {movies[k][6]}" for k in viewDict]
 
     showMovieList = [
@@ -249,3 +258,4 @@ def viewAllMoviesCashier(movies):
             exit()
         if event == "Go back":
             viewAllMoviesCashier.close()
+            break

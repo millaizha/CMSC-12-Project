@@ -1,5 +1,5 @@
 import PySimpleGUI as sg
-import files, main, change_window
+import files, change_window
 
 def deleteMovie(movies, booked):
     deleteMovieLayout = [
@@ -77,8 +77,11 @@ def deleteMovieByID(movies, booked):
             if answer == "Yes":
                 del movies[movieKey]
                 del booked[movieKey]
+                movieList = [f"{k} - {v[0]}" for k, v in movies.items()]
+
                 files.updateMovie(movies)
-                files.updateBooked(booked, movies)
+                files.updateBooked(booked, movies, )
+
                 deleteMovieByID['-MOVIEINFO-'].update([])
                 deleteMovieByID['-MOVIE-'].update(movieList)
         elif event == "Cancel":
@@ -130,13 +133,13 @@ def deleteMovieByDay(movies, booked):
                                 del booked[k]
                         files.updateMovie(movies)
                         files.updateBooked(booked, movies)
-                    deleteMovieByDay.close()
+                    moviesDel = []
             else:
                 sg.popup("Some inputs are missed!")   
         elif event == "Cancel":
             deleteMovieByDay.close()
-        
-        deleteMovie(movies, booked)   
+            deleteMovie(movies, booked) 
+          
 
 def deleteMovieByName(movies, booked):
     moviesDel = []
@@ -192,6 +195,7 @@ def deletePopup(data, movies):
         event, values = window.read()
 
         if event == sg.WIN_CLOSED or event == "No":
+            window.close()
             break
         else:
             window.close()

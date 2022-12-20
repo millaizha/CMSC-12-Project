@@ -1,7 +1,8 @@
 import PySimpleGUI as sg
-import files
-import book_movie
-import add_movie, edit_movie, delete_movie, view_movie
+import files, change_window, add_movie, edit_movie, delete_movie, view_movie, view_discount, book_movie
+
+import imp
+imp.reload(change_window)
 
 sg.theme('DarkGrey5')
 
@@ -29,7 +30,7 @@ def adminMain():
                     [sg.Button("Edit Movie")],
                     [sg.Button("Delete Movie")],
                     [sg.Button("View Movie")],
-                    [sg.Button("Add Discount Code")],
+                    [sg.Button("View Discount Coupons")],
                     [sg.Button("Go to Users")],
                     [sg.Button("Exit")]
                     ]
@@ -50,7 +51,9 @@ def adminMain():
             elif event == "Delete Movie":
                 delete_movie.deleteMovie(movies, booked)
             elif event == "View Movie":
-                view_movie.viewMovieAdmin(movies, booked)
+                view_movie.viewMovieAdmin(movies)
+            elif event == "View Discount Coupons":
+                view_discount.viewDiscount(discount)
             elif event == "Go to Users":
                 chooseUser()
             elif event == "Exit":
@@ -75,7 +78,7 @@ def cashierMain():
         else:
             cashierMain.close()
             if event == "View movie":
-                view_movie.viewMovieCashier(movies, booked)
+                view_movie.viewMovieCashier(movies)
             elif event == "Book movie":
                 book_movie.bookMovie(movies, booked, seats, discount)
             elif event == "Go to Users":
@@ -86,7 +89,6 @@ def cashierMain():
 movies = files.loadMovies()
 seats = files.loadSeats()
 booked = files.loadBooked()
-discount = {}
+discount = files.loadDiscount()
 
-print(booked)
 chooseUser()

@@ -17,7 +17,7 @@ def addMovieToFile(movies, booked):
         fpAddSeats.write(str(len(booked[ID])) + "\n")
         if len(booked[ID]) != 0:
             for i in booked[ID]:
-                fpAddSeats.write(i)
+                fpAddSeats.write(f"{i[0]} {i[1]}\n")
     fpAddSeats.close()
 
 def updateMovie(movies):
@@ -41,9 +41,15 @@ def updateBooked(booked, movies):
         fpUpdateBooked.write(str(len(booked[ID])) + "\n")
         if len(booked[ID]) != 0:
             for i in booked[ID]:
-                fpUpdateBooked.write(i)
+                fpUpdateBooked.write(f"{i[0]} {i[1]}\n")
     fpUpdateBooked.close()
 
+def updateDiscount(discount):
+    fpUpdateDiscount = open("discount.txt", "w")
+
+    for code in discount:
+        fpUpdateDiscount.write(f"{code} {discount[code]}\n")
+    fpUpdateDiscount.close()
 
 def loadMovies():
     fpMovies = open("movies.txt", "r")
@@ -62,7 +68,7 @@ def loadMovies():
             endTime = fpMovies.readline()[:-1]
             price = fpMovies.readline()[:-1]
 
-            movies[movieID] = [movieName, genre, restrict, venue, date, startTime, endTime, price]
+            movies[movieID] = [movieName, genre, restrict, venue, date, startTime, endTime, int(price)]
     fpMovies.close()
 
     return movies
@@ -92,8 +98,21 @@ def loadBooked():
         seats = []
         if numSeats != 0:
             for j in range(numSeats):
-                seats.append(fpBooked.readline()[:-1])
+                (seatNum, price) = (fpBooked.readline()[:-1]).split(" ")
+                seats.append([seatNum, float(price)])
 
         booked[ID] = seats
     fpBooked.close()
     return booked
+
+def loadDiscount():
+    fpDiscount = open("discount.txt", "r")
+    discount = {}
+
+    for line in fpDiscount.readlines():
+        code, off = line.split()
+        discount[code] = int(off)
+
+    fpDiscount.close()
+
+    return discount

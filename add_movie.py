@@ -1,6 +1,8 @@
 import PySimpleGUI as sg
 from datetimerange import DateTimeRange
-import files, main, change_window
+from datetime import datetime
+import files
+import change_window
 
 def addMovie(movies, booked):
     addMovieLayout = [
@@ -55,23 +57,44 @@ def addMovie(movies, booked):
 
         if event == sg.WIN_CLOSED:
             exit()
-        else:
-            if event == "Add Movie":
-                for k, v in movies.items():
-                    if v[3] == cinema and v[4] == values["-DATE-"] and (startTime in DateTimeRange(v[5], v[6]) or endTime in DateTimeRange(v[5], v[6])):
-                        sg.Popup(f"This movie will be in conflict with {k} - {v[0]} [Cinema {v[3]}]: {v[4]} {v[5]} - {v[6]}.")
-                        inConflict = True
-                if all(map(str.strip, [values[key] for key in input_key_list])) and not inConflict:
-                    addMovie.close()
-                    addMovieInfo(movies, booked, restrict, cinema, startTime, endTime, values)
-                    change_window.goToMenu("Admin")
-                    break
-                elif not all(map(str.strip, [values[key] for key in input_key_list])):
-                    sg.popup("Some inputs are missed!")
-            elif event == "Cancel":
+
+        if event == "Add Movie":
+            if not all(map(str.strip, [values[key] for key in input_key_list])):
+                sg.popup("Some inputs are missed!")
+                continue
+
+            if datetime.now() >= datetime.strptime(values["-DATE-"], "%m-%d-%y"):
+                sg.Popup("Please provide a future date.")
+                inConflict = True
+            try:
+                bool(datetime.strptime(startTime, "%I:%M%p"))
+            except ValueError:
+                sg.Popup("Start time has a wrong time format.\nPlease follow the format 'HH:MM AM/PM'")
+                inConflict = True
+                continue
+            try:
+                bool(datetime.strptime(endTime, "%I:%M%p"))
+            except ValueError:
+                sg.Popup("End time has a wrong time format.\nPlease follow the format 'HH:MM AM/PM'")
+                inConflict = True
+                continue
+            if datetime.strptime(startTime, "%I:%M%p") > datetime.strptime(endTime, "%I:%M%p"):
+                sg.Popup("End time is earlier than the start time.")
+                inConflict = True
+                continue
+            for k, v in movies.items():
+                if v[3] == cinema and v[4] == values["-DATE-"] and (startTime in DateTimeRange(v[5], v[6]) or endTime in DateTimeRange(v[5], v[6])):
+                    sg.Popup(f"This movie will be in conflict with {k} - {v[0]} [Cinema {v[3]}]: {v[4]} {v[5]} - {v[6]}.")
+                    inConflict = True
+            if all(map(str.strip, [values[key] for key in input_key_list])) and not inConflict:
                 addMovie.close()
+                addMovieInfo(movies, booked, restrict, cinema, startTime, endTime, values)
                 change_window.goToMenu("Admin")
                 break
+        elif event == "Cancel":
+            addMovie.close()
+            change_window.goToMenu("Admin")
+            break
 
 def addMovieInfo(movies, booked, restrict, cinema, startTime, endTime, values):
     with open("movies.txt", "r") as f:
