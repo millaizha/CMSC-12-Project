@@ -4,6 +4,7 @@ from datetime import datetime
 import files
 import change_window
 
+# Function to add movie
 def addMovie(movies, booked):
     addMovieLayout = [
                     [sg.T("Enter Movie name: "), sg.Input(key = "-NAME-", do_not_clear = True, size = (20,1))],
@@ -19,6 +20,7 @@ def addMovie(movies, booked):
 
     addMovie = sg.Window("Add Movie", addMovieLayout, modal = True)
 
+    # To check if all required boxes have inputs
     input_key_list = [key for key, value in addMovie.key_dict.items()
                     if isinstance(value, sg.Input)]
 
@@ -59,13 +61,16 @@ def addMovie(movies, booked):
             exit()
 
         if event == "Add Movie":
+            # If one input is missing
             if not all(map(str.strip, [values[key] for key in input_key_list])):
                 sg.popup("Some inputs are missed!")
                 continue
 
+            # If the date is in the past or present
             if datetime.now() >= datetime.strptime(values["-DATE-"], "%m-%d-%y"):
                 sg.Popup("Please provide a future date.")
                 inConflict = True
+            # If the time format is wrong
             try:
                 bool(datetime.strptime(startTime, "%I:%M%p"))
             except ValueError:
@@ -78,14 +83,20 @@ def addMovie(movies, booked):
                 sg.Popup("End time has a wrong time format.\nPlease follow the format 'HH:MM AM/PM'")
                 inConflict = True
                 continue
+
+            # If the end time is earlier than the start time
             if datetime.strptime(startTime, "%I:%M%p") > datetime.strptime(endTime, "%I:%M%p"):
                 sg.Popup("End time is earlier than the start time.")
                 inConflict = True
                 continue
+
+            # If there is conflict in time schedule
             for k, v in movies.items():
                 if v[3] == cinema and v[4] == values["-DATE-"] and (startTime in DateTimeRange(v[5], v[6]) or endTime in DateTimeRange(v[5], v[6])):
                     sg.Popup(f"This movie will be in conflict with {k} - {v[0]} [Cinema {v[3]}]: {v[4]} {v[5]} - {v[6]}.")
                     inConflict = True
+                
+            # If all details are valid 
             if all(map(str.strip, [values[key] for key in input_key_list])) and not inConflict:
                 addMovie.close()
                 addMovieInfo(movies, booked, restrict, cinema, startTime, endTime, values)
@@ -96,6 +107,7 @@ def addMovie(movies, booked):
             change_window.goToMenu("Admin")
             break
 
+#  Function to save movie to file
 def addMovieInfo(movies, booked, restrict, cinema, startTime, endTime, values):
     with open("movies.txt", "r") as f:
         intMovieID = int(f.readline()) + 1

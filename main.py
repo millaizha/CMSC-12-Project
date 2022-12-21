@@ -1,11 +1,14 @@
 import PySimpleGUI as sg
 import files, change_window, add_movie, edit_movie, delete_movie, view_movie, view_discount, book_movie
 
+
+# imp.reload to prevent AttributeError
 import imp
 imp.reload(change_window)
 
 sg.theme('DarkGrey5')
 
+# Main Menu where user chooses an account (admin or cashier)
 def chooseUser():
     user = sg.Window(
         "Movie Theater Booking System", 
@@ -23,6 +26,7 @@ def chooseUser():
             elif event == "Cashier":
                 cashierMain()
 
+# Menu for the admin
 def adminMain():
     adminMainLayout = [
                     [sg.T("Select an option:")],
@@ -59,6 +63,7 @@ def adminMain():
             elif event == "Exit":
                 exit()
 
+# Menu for the cashier
 def cashierMain():
     cashierMainLayout = [
                     [sg.T("Select an option:")],
@@ -86,6 +91,7 @@ def cashierMain():
             elif event == "Exit":
                 exit()
 
+# Loading files
 movies = files.loadMovies()
 seats = files.loadSeats()
 booked = files.loadBooked()

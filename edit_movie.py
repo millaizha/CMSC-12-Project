@@ -3,6 +3,7 @@ from datetimerange import DateTimeRange
 from datetime import datetime
 import files, change_window
 
+# Function to show movie list to edit 
 def editMovie(movies):
     movieList = [f"{k} - {v[0]}" for k, v in movies.items()]
     movieInfo = {}
@@ -31,6 +32,7 @@ def editMovie(movies):
         if event == sg.WIN_CLOSED:
             exit()
 
+        # Will filter the movie list box depending on the text in the search bar
         if values['-SEARCH-'] != '':
             search = values['-SEARCH-']
             new_values = [x for x in movieList if search in x]
@@ -38,6 +40,7 @@ def editMovie(movies):
         else:
             editMovie['-MOVIE-'].update(movieList)
 
+        # Adds the information of the movie to the movie information list box
         if event == '-MOVIE-' and len(values['-MOVIE-']):
             movieKey = str(values["-MOVIE-"])[2:6]
             movieInfo = [f"Movie ID: {movieKey}", f"Movie Name: {movies[movieKey][0]}", 
@@ -46,6 +49,7 @@ def editMovie(movies):
                         f"Price: P{movies[movieKey][7]}"]
             editMovie["-MOVIEINFO-"].update(movieInfo)
 
+        # Shows the edit information window
         if event == "Edit Movie Information" and bool(movieInfo):
             editMovieInfo(movies, movieKey)
             editMovie['-MOVIEINFO-'].update([])
@@ -58,6 +62,7 @@ def editMovie(movies):
             change_window.goToMenu("Admin")
             break
 
+# Function to edit movie information
 def editMovieInfo(movies, movieKey):
     editMovieInfoLayout = [
                     [sg.T("Enter Movie name: "), sg.Input(movies[movieKey][0], key = "-NAME-", do_not_clear = True, size = (20,1))],
