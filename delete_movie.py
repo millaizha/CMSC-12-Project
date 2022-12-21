@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 import files, change_window
 
+# Window for showing delete movie options
 def deleteMovie(movies, booked):
     deleteMovieLayout = [
                         [sg.Button("Delete a movie by ID")],
@@ -28,7 +29,7 @@ def deleteMovie(movies, booked):
                 change_window.goToMenu("Admin")
                 break
         
-
+# Window for deleting movie by its ID
 def deleteMovieByID(movies, booked):
     movieList = [f"{k} - {v[0]}" for k, v in movies.items()]
     movieInfo = {}
@@ -57,6 +58,7 @@ def deleteMovieByID(movies, booked):
         if event == sg.WIN_CLOSED:
             exit()
 
+        # Will filter the movie list box depending on the text in the search bar
         if values['-SEARCH-'] != '':
             search = values['-SEARCH-']
             new_values = [x for x in movieList if search in x]
@@ -64,6 +66,7 @@ def deleteMovieByID(movies, booked):
         else:
             deleteMovieByID['-MOVIE-'].update(movieList)
 
+        # Adds the information of the movie to the movie information list box
         if event == '-MOVIE-' and len(values['-MOVIE-']):
             movieKey = str(values["-MOVIE-"])[2:6]
             movieInfo = [f"Movie ID: {movieKey}", f"Movie Name: {movies[movieKey][0]}", 
@@ -72,9 +75,11 @@ def deleteMovieByID(movies, booked):
                         f"Price: P{movies[movieKey][7]}"]
             deleteMovieByID["-MOVIEINFO-"].update(movieInfo)
 
+        # Confirmation to delete the selected movie ID
         if event == "Delete Movie" and bool(movieInfo):
             answer = sg.popup_yes_no(f"Are you sure to delete {movieKey} - {movies[movieKey][0]}?")
             if answer == "Yes":
+                # Deletes the movie in the files
                 del movies[movieKey]
                 del booked[movieKey]
                 movieList = [f"{k} - {v[0]}" for k, v in movies.items()]
@@ -88,6 +93,7 @@ def deleteMovieByID(movies, booked):
             deleteMovieByID.close()
             deleteMovie(movies, booked)
 
+# Window for deleting all movies in a cinema by day
 def deleteMovieByDay(movies, booked):
     moviesDel = []
 
@@ -100,6 +106,7 @@ def deleteMovieByDay(movies, booked):
 
     deleteMovieByDay = sg.Window("Delete Movie", deleteMovieByDayLayout, modal = True, element_justification = "c")
 
+    # To check if all required boxes have inputs
     input_key_list = [key for key, value in deleteMovieByDay.key_dict.items()
                     if isinstance(value, sg.Input)]
 
@@ -115,32 +122,38 @@ def deleteMovieByDay(movies, booked):
 
         if event == sg.WIN_CLOSED:
             exit()
+        # Adds all movies in the chosen cinema on the chosen date
         if event == "Search Movies":
             for k, v in movies.items():
                 if cinema == v[3] and date == v[4]:
                     moviesDel.append(k)
 
+            # Message will popup saying there is no movies on that cinema on that date
             if all(map(str.strip, [values[key] for key in input_key_list])):
                 if len(moviesDel) == 0:
                     sg.popup(f"There are no movies on {date} in Cinema {cinema}")
                     continue
                 else:
+                    # Confirmation to delete the movies
                     answer = deletePopup(moviesDel, movies)
                     if answer == "Yes":
+                        # Deletes the movies in the files
                         for k in moviesDel:
                             if k in movies:
                                 del movies[k]
                                 del booked[k]
                         files.updateMovie(movies)
                         files.updateBooked(booked, movies)
+                    # Empties the list to prevent key errors
                     moviesDel = []
             else:
+                # One input is missing
                 sg.popup("Some inputs are missed!")   
         elif event == "Cancel":
             deleteMovieByDay.close()
             deleteMovie(movies, booked) 
           
-
+# Window for deleting movies by name
 def deleteMovieByName(movies, booked):
     moviesDel = []
 
@@ -160,14 +173,19 @@ def deleteMovieByName(movies, booked):
 
         if event == sg.WIN_CLOSED:
             exit()
+        
+        # Adds all movies with the same name
         if event == "Search" and name != "":
             for k, v in movies.items():
                 if values["-NAME-"] == v[0]:
                     moviesDel.append(k)
+            # Popup will show if there is no movie with that name
             if len(moviesDel) == 0:
                 sg.popup(f"There is no movie named {name}")
             else:
+                # Confirmation to delete the movies
                 answer = deletePopup(moviesDel, movies)
+                # Deletes the movies in the files
                 if answer == "Yes":
                     for k in moviesDel:
                         if k in movies:
@@ -182,6 +200,7 @@ def deleteMovieByName(movies, booked):
 
     deleteMovie(movies, booked)
 
+# Window for the delete movie popup
 def deletePopup(data, movies):
     layout =[
             [sg.T("Are you sure to delete the following movie/s?")],

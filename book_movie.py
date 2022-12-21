@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 import purchase, change_window
 
+# Window for booking movie seats
 def bookMovie(movies, booked, seats, discount):
     movieList = [f"{k} - {v[0]}" for k, v in movies.items()]
     movieInfo = {}
@@ -29,6 +30,7 @@ def bookMovie(movies, booked, seats, discount):
         if event == sg.WIN_CLOSED:
             exit()
 
+        # Will filter the movie list box depending on the text in the search bar
         if values['-SEARCH-'] != '':
             search = values['-SEARCH-']
             new_values = [x for x in movieList if search in x]
@@ -36,6 +38,7 @@ def bookMovie(movies, booked, seats, discount):
         else:
             bookMovie['-MOVIE-'].update(movieList)
 
+        # Adds the information of the movie to the movie information list box
         if event == '-MOVIE-' and len(values['-MOVIE-']):
             movieKey = str(values["-MOVIE-"])[2:6]
             movieInfo = [f"Movie ID: {movieKey}", f"Movie Name: {movies[movieKey][0]}", 
@@ -53,9 +56,11 @@ def bookMovie(movies, booked, seats, discount):
             change_window.goToMenu("Cashier")
             break
 
+# Window to select seats to book
 def bookSeats(movieKey, movies, booked, seats, discount):
     bookedSeats = []
 
+    # To determine how many seats to show
     if movies[movieKey][3] == "1":
         numSeats = len(seats) + 1
     elif movies[movieKey][3] == "2":
@@ -94,9 +99,11 @@ def bookSeats(movieKey, movies, booked, seats, discount):
     bookSeats = sg.Window("Book seats", bookSeatsLayout, finalize = True, element_justification = "c")
 
     while True:
+        # Prints cinema seats
         for i in range(numSeats):
             for j in seats:
                 for k in range(len(booked[movieKey])):
+                    # If the seat is taken, it will be color red and is disabled
                     if j[i] in booked[movieKey][k]:
                         bookSeats.Element(f"-SEAT{j[i]}-").update(button_color = "red", disabled = True)
 
@@ -120,13 +127,16 @@ def bookSeats(movieKey, movies, booked, seats, discount):
         while True:
             if selectedSeat not in bookedSeats:
                 if selectedSeat != "Proceed to Payment":
+                    # Will make the selected seat into green and be added to the seats chosen to booked
                     bookedSeats.append([selectedSeat])
                     bookSeats[event].update(button_color = "green")
             else:
+                # Resets the seat
                 bookedSeats.remove(selectedSeat)
                 bookSeats[event].update(button_color = "#8e8b82")
             bookedSeats.sort()
             selectedSeats = ""
+            # Shows the seats selected
             for seat in bookedSeats:
                 selectedSeats += f"{seat[0]} "
             bookSeats["-SEATS-"].update(selectedSeats)

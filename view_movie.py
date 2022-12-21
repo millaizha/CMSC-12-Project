@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 import files, change_window
 
+# Window for showing view movie options for admin
 def viewMovieAdmin(movies):
     viewMovieAdminLayout = [
                            [sg.Button("View all movies")],
@@ -30,8 +31,9 @@ def viewMovieAdmin(movies):
             viewMovieAdmin.close()
             change_window.goToMenu("Admin")
 
+# Window to show all movies
 def viewAllMoviesAdmin(movies):
-    movieList = [f"{k} - {v[0]}" for k, v in movies.items()]
+    movieList = [f"{k} - {v[0]} [Cinema {v[3]} {v[5]}-{v[6]}]" for k, v in movies.items()]
 
     showMovieList = [
                     [sg.T("Movie List:")],
@@ -50,6 +52,7 @@ def viewAllMoviesAdmin(movies):
             viewAllMoviesAdmin.close()
             break
 
+# Window to show all movies in a cinema by the chosen date
 def viewMovieInCinema(movies):
     movieList = []
 
@@ -93,11 +96,13 @@ def viewMovieInCinema(movies):
 
             for k, v in movies.items():
                 if v[3] == cinema and v[4] == date:
-                    movieList.append(f"{k} - {v[0]}")
+                    movieList.append(f"{k} - {v[0]} [Cinema {v[3]} {v[5]}-{v[6]}]")
 
+            # Shows popup if there is no movie on the chosen cinema on the chosen date
             if len(movieList) == 0:
                 sg.popup(f"There are no movies on {date} at Cinema {cinema}")
             else:
+                # Shows the movie list in the list box
                 viewMovieInCinema["-MOVIELIST-"].update(movieList)
         elif event == "Clear":
             viewMovieInCinema["-MOVIELIST-"].update([])
@@ -106,11 +111,12 @@ def viewMovieInCinema(movies):
             viewMovieInCinema.close()
             break
 
+# Shows all the details of a movie
 def viewMovieDetails(movies):
     movieList = [f"{k} - {v[0]}" for k, v in movies.items()]
     movieInfo = {}
+    # Reload the booked seats file
     booked = files.loadBooked()
-    print(booked)
 
     showMovieList = [
                     [sg.T("Select a Movie:")],
@@ -135,6 +141,7 @@ def viewMovieDetails(movies):
         if event == sg.WIN_CLOSED:
             exit()
 
+        # Will filter the movie list box depending on the text in the search bar
         if values['-SEARCH-'] != '':
             search = values['-SEARCH-']
             new_values = [x for x in movieList if search in x]
@@ -142,11 +149,13 @@ def viewMovieDetails(movies):
         else:
             viewMovieDetails['-MOVIE-'].update(movieList)
 
+        # Shows the movie information in the list box
         if event == '-MOVIE-' and len(values['-MOVIE-']):
             movieKey = str(values["-MOVIE-"])[2:6]
             
             totalEarnings = 0
             
+            # Will get the total earnings from the booked seats
             for i in range(len(booked[movieKey])):
                 totalEarnings += float(booked[movieKey][i][1])
 
@@ -162,6 +171,7 @@ def viewMovieDetails(movies):
             viewMovieDetails.close()
             break
 
+# Window to view the movies searched by name
 def viewMovieByName(movies):
     viewDict = {}
     movieList = []
@@ -192,14 +202,17 @@ def viewMovieByName(movies):
         if event == sg.WIN_CLOSED:
             exit()
 
+        # Will search fpr movies with the same name
         if event == "Search":
             for k, v in movies.items():
                 if name == v[0]:
                     viewDict[k] = v
 
+            # Sorts the movies by date and time
             viewDict = sorted(viewDict, key = lambda k: ([viewDict[k][4]], [viewDict[k][5]]))
             movieList = [f"{k} - {movies[k][0]} [Cinema {movies[k][3]}] {movies[k][4]} {movies[k][5]} - {movies[k][6]}" for k in viewDict]
 
+            # Shows a popup if there is no movie with the inputted name
             if len(viewDict) == 0:
                 sg.popup(f"There is no movie named {name}")
             else:
@@ -215,6 +228,7 @@ def viewMovieByName(movies):
             viewMovieByName.close()
             break
 
+# Window for showing view movie options for cashier
 def viewMovieCashier(movies):
     viewMovieCashierLayout = [
                            [sg.Button("View all movies")],
@@ -239,6 +253,7 @@ def viewMovieCashier(movies):
             change_window.goToMenu("Cashier")
             break
 
+# Window to show all movies for cashier
 def viewAllMoviesCashier(movies):
     viewDict = sorted(movies, key = lambda k: ([movies[k][4]], [movies[k][5]]))
     movieList = [f"{k} - {movies[k][0]} [Cinema {movies[k][3]}] {movies[k][4]} {movies[k][5]} - {movies[k][6]}" for k in viewDict]

@@ -1,2 +1,1 @@
-SAMPLE 20
-HA 40
+sample 20

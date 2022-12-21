@@ -2,6 +2,7 @@ import PySimpleGUI as sg
 from datetime import datetime
 import files, change_window
 
+# Window for ticket purchasing
 def purchaseTickets(bookedSeats, movieKey, movies, booked, discount):
     amountDue = len(bookedSeats) * movies[movieKey][7]
     selectedSeats = ""
@@ -35,6 +36,7 @@ def purchaseTickets(bookedSeats, movieKey, movies, booked, discount):
         if event == sg.WIN_CLOSED:
             exit()
 
+        # If user inputted a discount code
         if values["-DISCOUNT-"] != "":
             code = values["-DISCOUNT-"]
             purchaseTickets["-OFF-"].update("\t\t    Invalid Code", visible = True)
@@ -50,6 +52,7 @@ def purchaseTickets(bookedSeats, movieKey, movies, booked, discount):
         elif values["-DISCOUNT-"] == "":
             purchaseTickets["-OFF-"].update(visible = False)
 
+        # Checks out the movie tickets
         if event == "Purchase Tickets" and bool(values["-CASH-"]):
             money = float(values["-CASH-"])
             if money < amountDue:
@@ -67,6 +70,7 @@ def purchaseTickets(bookedSeats, movieKey, movies, booked, discount):
             purchaseTickets.close()
             break
 
+# Shows the receipt
 def printReceipt(amount, code, cash, bookedSeats, movieKey, movies, discount):
     now = datetime.now()
     dtString = now.strftime("%d/%m/%Y %H:%M:%S")
@@ -97,6 +101,7 @@ def printReceipt(amount, code, cash, bookedSeats, movieKey, movies, discount):
     printReceipt = sg.Window("Receipt", printReceiptLayout, finalize = "True")
 
     while True:
+        # Shows the discount code if the coupon is valid
         if code in discount:
             printReceipt.Element("-DISCOUNT-").update(f"Discount\t\t: {discount[code]}%", visible = True)
 

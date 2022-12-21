@@ -1,6 +1,7 @@
 import PySimpleGUI as sg
 import files, change_window
 
+# Window to show discount codes and other actions (add, edit, delete coupon)
 def viewDiscount(discount):
     discountList = [f"{k}: {v}%" for k, v in discount.items()]
     discountInfo = {}
@@ -27,6 +28,7 @@ def viewDiscount(discount):
         if event == sg.WIN_CLOSED:
             exit()
 
+        # Will filter the coupon list box depending on the text in the search bar
         if values['-SEARCH-'] != '':
             search = values['-SEARCH-']
             new_values = [x for x in discountList if search in x]
@@ -34,6 +36,7 @@ def viewDiscount(discount):
         else:
             viewDiscount['-CODE-'].update(discountList)
 
+        # Adds the information of the coupon to the coupon information list box
         if event == '-CODE-' and len(values['-CODE-']):
             code, off = str(values["-CODE-"])[2:-2].split(": ")
             discountInfo = [f"Coupon Code: {code}", f"Discount Off: {off}"]
@@ -54,6 +57,7 @@ def viewDiscount(discount):
             viewDiscount.close()
             change_window.goToMenu("Admin")
 
+# Window for adding discount codes
 def addDiscount(discount):
     addDiscountLayout = [
                         [sg.T("Enter Discount code:")],
@@ -65,6 +69,7 @@ def addDiscount(discount):
 
     addDiscount = sg.Window("Add Discount", addDiscountLayout, modal = True, element_justification = "c")
 
+    # To check if all required boxes have inputs
     input_key_list = [key for key, value in addDiscount.key_dict.items()
                     if isinstance(value, sg.Input)]
     while True:
@@ -74,18 +79,21 @@ def addDiscount(discount):
             exit()
 
         if event == "Add Discount Code":
+            # If all details are valid 
             if all(map(str.strip, [values[key] for key in input_key_list])):
                 discount[values["-CODE-"]] = values["-OFF-"]
                 addDiscount.close()
                 files.updateDiscount(discount)
                 addDiscount.close()
                 viewDiscount(discount)
+            # If one input is missing
             elif not all(map(str.strip, [values[key] for key in input_key_list])):
                     sg.popup("Some inputs are missed!")
         elif event == "Cancel":
             addDiscount.close()
             viewDiscount(discount)
 
+# Window for editing discount codes
 def editDiscount(discount, code):
     editDiscountLayout = [
                         [sg.T("Enter Discount code:")],
@@ -97,6 +105,7 @@ def editDiscount(discount, code):
 
     editDiscount = sg.Window("Edit Movie Info", editDiscountLayout, finalize = True)
 
+    # To check if all required boxes have inputs
     input_key_list = [key for key, value in editDiscount.key_dict.items()
                     if isinstance(value, sg.Input)]
 
@@ -107,6 +116,7 @@ def editDiscount(discount, code):
             exit()
 
         if event == "Edit Discount Code":
+            # If all details are valid 
             if all(map(str.strip, [values[key] for key in input_key_list])):
                 del discount[code]
                 discount[values["-CODE-"]] = values["-OFF-"]
@@ -114,14 +124,17 @@ def editDiscount(discount, code):
                 files.updateDiscount(discount)
                 editDiscount.close()
                 viewDiscount(discount)
+            # If one input is missing
             elif not all(map(str.strip, [values[key] for key in input_key_list])):
                     sg.popup("Some inputs are missed!")
         elif event == "Cancel":
             editDiscount.close()
             viewDiscount(discount)
 
+# Window for deleting discount codes
 def deleteDiscount(discount, code):
     answer = sg.popup_yes_no(f"Are you sure to delete {code}: {discount[code]}%?")
+    # Deletes the discount code in the file
     if answer == "Yes":
         del discount[code]
         files.updateDiscount(discount)

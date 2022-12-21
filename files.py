@@ -1,3 +1,4 @@
+# Function to add movie to files
 def addMovieToFile(movies, booked):
     fpReadMovies = open("movies.txt", "r")
     intMovieID = int(fpReadMovies.readline()) + 1
@@ -20,6 +21,7 @@ def addMovieToFile(movies, booked):
                 fpAddSeats.write(f"{i[0]} {i[1]}\n")
     fpAddSeats.close()
 
+# Function to update movie in the file
 def updateMovie(movies):
     fpRead = open("movies.txt", "r")
     intMovieID = int(fpRead.readline())
@@ -32,6 +34,7 @@ def updateMovie(movies):
         fpAddMovie.write(f"{ID}\n{movies[ID][0]}\n{movies[ID][1]}\n{movies[ID][2]}\n{movies[ID][3]}\n{movies[ID][4]}\n{movies[ID][5]}\n{movies[ID][6]}\n{movies[ID][7]}\n")
     fpAddMovie.close()
 
+# Function to add the booked seats to file
 def updateBooked(booked, movies):
     fpUpdateBooked = open("booked.txt", "w")
 
@@ -44,6 +47,7 @@ def updateBooked(booked, movies):
                 fpUpdateBooked.write(f"{i[0]} {i[1]}\n")
     fpUpdateBooked.close()
 
+# Function to update discount codes in the file
 def updateDiscount(discount):
     fpUpdateDiscount = open("discount.txt", "w")
 
@@ -51,6 +55,7 @@ def updateDiscount(discount):
         fpUpdateDiscount.write(f"{code} {discount[code]}\n")
     fpUpdateDiscount.close()
 
+# Function to load movies in the file to a dictionary
 def loadMovies():
     fpMovies = open("movies.txt", "r")
     movies = {}
@@ -73,6 +78,7 @@ def loadMovies():
 
     return movies
 
+# Function to load seats in the file to a dictionary
 def loadSeats():
     fpSeats = open("seats.txt", "r")
     seats = []
@@ -88,6 +94,7 @@ def loadSeats():
     fpSeats.close()        
     return seats
 
+# Function to load booked seats in the file to a dictionary
 def loadBooked():
     fpBooked = open("booked.txt", "r")
     booked = {}
@@ -105,6 +112,7 @@ def loadBooked():
     fpBooked.close()
     return booked
 
+# Function to load discount codes in the file to a dictionary
 def loadDiscount():
     fpDiscount = open("discount.txt", "r")
     discount = {}

@@ -4,7 +4,7 @@ from datetime import datetime
 import files
 import change_window
 
-# Function to add movie
+# Window to add movie
 def addMovie(movies, booked):
     addMovieLayout = [
                     [sg.T("Enter Movie name: "), sg.Input(key = "-NAME-", do_not_clear = True, size = (20,1))],
@@ -107,7 +107,7 @@ def addMovie(movies, booked):
             change_window.goToMenu("Admin")
             break
 
-#  Function to save movie to file
+# Window to save movie to file
 def addMovieInfo(movies, booked, restrict, cinema, startTime, endTime, values):
     with open("movies.txt", "r") as f:
         intMovieID = int(f.readline()) + 1

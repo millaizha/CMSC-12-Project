@@ -3,7 +3,7 @@ from datetimerange import DateTimeRange
 from datetime import datetime
 import files, change_window
 
-# Function to show movie list to edit 
+# Window to show movie list to edit 
 def editMovie(movies):
     movieList = [f"{k} - {v[0]}" for k, v in movies.items()]
     movieInfo = {}
@@ -62,7 +62,7 @@ def editMovie(movies):
             change_window.goToMenu("Admin")
             break
 
-# Function to edit movie information
+# Window to edit movie information
 def editMovieInfo(movies, movieKey):
     editMovieInfoLayout = [
                     [sg.T("Enter Movie name: "), sg.Input(movies[movieKey][0], key = "-NAME-", do_not_clear = True, size = (20,1))],
@@ -78,6 +78,7 @@ def editMovieInfo(movies, movieKey):
 
     editMovieInfo = sg.Window("Edit Movie Info", editMovieInfoLayout, finalize = True)
 
+    # To check if all required boxes have inputs
     input_key_list = [key for key, value in editMovieInfo.key_dict.items()
                     if isinstance(value, sg.Input)]
 
@@ -135,13 +136,16 @@ def editMovieInfo(movies, movieKey):
                 endTime += "PM"
                 
             if event == "Finish Editing Movie":
+                # If one input is missing
                 if not all(map(str.strip, [values[key] for key in input_key_list])):
                     sg.popup("Some inputs are missed!")
                     continue
                 
+                # If the date is in the past or present
                 if datetime.now() >= datetime.strptime(values["-DATE-"], "%m-%d-%y"):
                     sg.Popup("Please provide a future date.")
                     inConflict = True
+                # If the time format is wrong
                 try:
                     bool(datetime.strptime(startTime, "%I:%M%p"))
                 except ValueError:
@@ -154,15 +158,20 @@ def editMovieInfo(movies, movieKey):
                     sg.Popup("End time has a wrong time format.\nPlease follow the format 'HH:MM AM/PM'")
                     inConflict = True
                     continue
+
+                # If the end time is earlier than the start time
                 if datetime.strptime(startTime, "%I:%M%p") > datetime.strptime(endTime, "%I:%M%p"):
                     sg.Popup("End time is earlier than the start time.")
                     inConflict = True
                     continue
+
+                # If there is conflict in time schedule
                 for k, v in movies.items():
                     if k != movieKey and v[3] == cinema and v[4] == values["-DATE-"] and (
                         startTime in DateTimeRange(v[5], v[6]) or endTime in DateTimeRange(v[5], v[6])):
                         sg.Popup(f"This movie will be in conflict with {k} - {v[0]} [Cinema {v[3]}]: {v[4]} {v[5]} - {v[6]}.")
                         inConflict = True
+                # If all details are valid 
                 if all(map(str.strip, [values[key] for key in input_key_list])) and not inConflict:
                     movies[movieKey] = [values["-NAME-"], values["-GENRE-"], restrict, cinema, values["-DATE-"], startTime, endTime, int(values["-PRICE-"])]
                     editMovieInfo.close()
